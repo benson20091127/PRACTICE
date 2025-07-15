@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>修仙劇情 - 修仙文字遊戲</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+    <script src="theme.js"></script>
+    <style>
+    /* 文字特效 */
+    .fade-in { animation: fadeIn 1s; }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    .flash { animation: flashAnim 0.6s; }
+    @keyframes flashAnim { 0%{background:#fffbe6;} 50%{background:#ffe066;} 100%{background:transparent;} }
+    body {
+        /* 古風背景漸層+花紋 */
+        background: linear-gradient(135deg, #f8f4e6 0%, #e6d9b3 100%);
+        background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+        font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif;
+    }
+    .story-main {
+        /* 古風邊框+陰影+花紋 */
+        background: rgba(255,255,240,0.98);
+        border-radius: 32px;
+        border: 5px solid #bfa76f;
+        box-shadow: 0 16px 64px rgba(120,100,60,0.18);
+        padding: 48px 36px 36px 36px;
+        position: relative;
+        overflow: hidden;
+        /* 古風花紋 */
+        background-image: url('https://svgshare.com/i/13vA.svg');
+        background-repeat: no-repeat;
+        background-size: 120px 120px;
+        background-position: top left;
+    }
+    .story-title {
+        font-size: 2.8rem;
+        font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif;
+        color: #7c5c2b;
+        text-shadow: 2px 2px 16px #e6d9b3, 0 0 2px #fff;
+        letter-spacing: 5px;
+        margin-bottom: 32px;
+        animation: fadeIn 1.2s;
+        border-bottom: 2px dashed #bfa76f;
+        padding-bottom: 8px;
+    }
+    .points-indicator, .life-indicator {
+        position: static;
+        display: inline-block;
+        margin-top: 0;
+        margin-bottom: 0;
+        min-width: 160px;
+        font-size: 1.18rem;
+        color: #bfa76f;
+        background: rgba(255,255,240,0.85);
+        border: 2px solid #bfa76f;
+        border-radius: 16px;
+        padding: 8px 22px;
+        box-shadow: 0 2px 16px rgba(180,180,180,0.12);
+        font-weight: bold;
+        font-family: "Ma Shan Zheng", "Noto Serif TC", serif;
+        z-index: 2;
+    }
+    .btn, .btn-outline-primary, .btn-outline-secondary, .btn-outline-danger {
+        border-radius: 24px;
+        font-family: "Ma Shan Zheng", "Noto Serif TC", serif;
+        font-size: 1.08rem;
+        letter-spacing: 2px;
+        box-shadow: 0 2px 12px rgba(180,180,180,0.15);
+        border-width: 2px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-outline-primary {
+        border-color: #bfa76f;
+        color: #7c5c2b;
+        background: linear-gradient(90deg,#fffbe6 60%,#e6d9b3 100%);
+    }
+    .btn-outline-primary:hover {
+        background: #e6d9b3;
+        color: #fff;
+        transform: scale(1.08);
+        box-shadow: 0 4px 24px rgba(120,180,255,0.25);
+    }
+    .btn-outline-secondary, .btn-outline-danger {
+        border-color: #bfa76f;
+        color: #7c5c2b;
+        background: #f8f4e6;
+    }
+    .btn-outline-secondary:hover, .btn-outline-danger:hover {
+        background: #bfa76f;
+        color: #fff;
+    }
+    /* 古風裝飾SVG雲霧 */
+    .cloud-svg {
+        position: absolute;
+        left: -40px; top: -60px;
+        width: 180px; height: 120px;
+        opacity: 0.18;
+        z-index: 0;
+        pointer-events: none;
+    }
+    .cloud-svg2 {
+        position: absolute;
+        right: -60px; bottom: -40px;
+        width: 140px; height: 90px;
+        opacity: 0.13;
+        z-index: 0;
+        pointer-events: none;
+    }
+    /* 修仙小提示浮動區塊 */
+    .tips-box {
+        position: fixed;
+        right: 36px;
+        bottom: 36px;
+        min-width: 220px;
+        max-width: 320px;
+        background: rgba(255,255,240,0.96);
+        border: 2px solid #bfa76f;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(120,120,120,0.10);
+        padding: 18px 22px 14px 22px;
+        color: #7c5c2b;
+        font-size: 1.12rem;
+        font-family: "Noto Serif TC", "Ma Shan Zheng", serif;
+        z-index: 99;
+        text-align: left;
+        pointer-events: none;
+        opacity: 0.92;
+        transition: opacity 0.3s;
+    }
+    .tips-box-title {
+        font-weight: bold;
+        font-size: 1.08rem;
+        margin-bottom: 6px;
+        letter-spacing: 2px;
+        color: #bfa76f;
+    }
+    @media (max-width: 900px) {
+        .tips-box { right: 10px; bottom: 10px; }
+        .points-indicator, .life-indicator { right: 10px; }
+    }
+    @media (max-width: 600px) {
+        .tips-box { min-width: 120px; max-width: 98vw; font-size: 1rem; padding: 10px 8px; }
+        .points-indicator, .life-indicator { min-width: 90px; font-size: 1rem; padding: 6px 10px; }
+    }
+    #choices .btn {
+        min-width: 120px;
+        margin-bottom: 10px;
+    }
+    #story {
+        min-height: 48px;
+    }
+    .d-flex.gap-3 > * {
+        margin-right: 1rem;
+    }
+    .d-flex.gap-3 > *:last-child {
+        margin-right: 0;
+    }
+    </style>
+</head>
+<body class="bg-light">
+<!-- 古風雲霧SVG裝飾 -->
+<svg class="cloud-svg" viewBox="0 0 180 120"><path fill="#bfa76f" d="M20,60 Q60,10 120,40 Q170,80 100,100 Q40,120 20,60 Z"/></svg>
+<svg class="cloud-svg2" viewBox="0 0 140 90"><path fill="#bfa76f" d="M10,40 Q40,10 100,30 Q130,60 70,80 Q20,90 10,40 Z"/></svg>
+<div class="container d-flex justify-content-center align-items-center" style="min-height:90vh;">
+    <div class="story-main w-100" style="max-width:600px;margin:auto;position:relative;">
+        <div class="story-title text-center">修仙文字冒險</div>
+        <div class="d-flex justify-content-center align-items-center gap-4 mb-4" style="margin-top:10px;">
+            <div class="points-indicator" id="pointsIndicator"></div>
+            <div class="life-indicator" id="lifeIndicator"></div>
+        </div>
+        <div class="d-flex justify-content-center gap-3 mb-3 flex-wrap">
+            <a href="shop.html" class="btn btn-outline-secondary">返回商城</a>
+            <a href="inventory.html" class="btn btn-outline-primary">查看背包</a>
+            <button class="btn btn-outline-danger" onclick="logout()">登出</button>
+        </div>
+        <div id="story" class="mb-4 fs-5 text-center"></div>
+        <div id="choices" class="d-flex justify-content-center flex-wrap gap-3"></div>
+    </div>
+</div>
+<!-- 修仙小提示浮動區塊 -->
+<div id="tipsBox" class="tips-box"></div>
+<script>
+// filepath: c:\Users\USER\Desktop\PRACTICE\story.html
+let userItems = [];
+let isDead = false;
+let hasTicket = false;
+let points = 0;
+let life = 30; // 初始壽命
+let lastStep = -1;
+let lastEventType = '';
+let eventHistory = [];
+
+function fetchInventory(cb){
+    fetch('inventory.php')
+    .then(res=>res.json())
+    .then(data=>{
+        userItems = data.items || [];
+        hasTicket = userItems.some(x=>x.name==='結局券');
+        // 裝備加成計算
+        calcLifeAndEquip();
+        cb && cb();
+    });
+}
+function fetchPoints(cb){
+    fetch('shop.php')
+    .then(res=>res.json())
+    .then(data=>{
+        points = data.points || 0;
+        document.getElementById('pointsIndicator').innerHTML = '商城點數：' + points;
+        cb && cb();
+    });
+}
+function updatePointsIndicator(val){
+    points = val;
+    document.getElementById('pointsIndicator').innerHTML = '商城點數：' + points;
+}
+function updateLifeIndicator(){
+    document.getElementById('lifeIndicator').innerHTML = '壽命：' + life;
+}
+function addPoints(amount, callback){
+    fetch('add_points.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'amount='+amount
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        updatePointsIndicator(data.points ?? (points+amount));
+        fetchInventory(callback);
+    });
+}
+function losePoints(amount, callback){
+    fetch('add_points.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:'amount=' + (-amount)
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        updatePointsIndicator(data.points ?? (points-amount));
+        fetchInventory(callback);
+    });
+}
+function addLife(amount){
+    life += amount;
+    updateLifeIndicator();
+}
+function loseLife(amount){
+    life -= amount;
+    if(life < 0) life = 0;
+    updateLifeIndicator();
+}
+function getRandom(min, max){
+    return Math.floor(Math.random() * (max-min+1)) + min;
+}
+// 裝備加成計算
+function calcLifeAndEquip(){
+    let atk = 0, def = 0, lvl = 0;
+    userItems.forEach(i=>{
+        atk += parseInt(i.attack||0);
+        def += parseInt(i.defense||0);
+        lvl += parseInt(i.level||0);
+    });
+    // 裝備等級越高，死亡率越低
+    window._equipBonus = {atk, def, lvl};
+}
+// 事件庫擴充
+const eventPool = {
+    0: [
+        {type:'adventure', text:'你在山谷遇到神秘老人，是否請教修仙？', choices:[
+            {label:'請教老人', next:1, event:'adventure'},
+            {label:'繼續前行', next:2, event:'explore'}
+        ]},
+        {type:'explore', text:'你在竹林發現一本古籍，是否翻閱？', choices:[
+            {label:'翻閱古籍', next:3, event:'explore'},
+            {label:'打坐冥想', next:0, event:'rest'}
+        ]},
+        {type:'rest', text:'你在溪邊打坐，感受天地靈氣。', choices:[
+            {label:'繼續打坐', next:0, event:'rest'},
+            {label:'前往山谷', next:1, event:'adventure'}
+        ]},
+        // 新增特殊事件
+        {type:'special', text:'你發現一顆閃耀的靈丹妙藥。', choices:[
+            {label:'服用靈丹', next:0, event:'elixir'},
+            {label:'留著備用', next:0, event:'rest'}
+        ]}
+    ],
+    1: [
+        {type:'adventure', text:'山谷雲深不知處，突然出現妖獸。', choices:[
+            {label:'迎戰妖獸', next:4, event:'fight'},
+            {label:'逃離山谷', next:0, event:'rest'}
+        ]},
+        {type:'explore', text:'你在山谷發現靈石，是否採集？', choices:[
+            {label:'採集靈石', next:2, event:'adventure'},
+            {label:'原地修煉', next:0, event:'rest'}
+        ]},
+        {type:'rest', text:'你在山谷休息，聽見遠處水聲。', choices:[
+            {label:'前往溪邊', next:3, event:'explore'},
+            {label:'繼續休息', next:0, event:'rest'}
+        ]},
+        {type:'special', text:'你偶遇仙鶴，仙鶴口中銜來一顆靈丹妙藥。', choices:[
+            {label:'收下靈丹', next:0, event:'elixir'},
+            {label:'婉拒仙鶴', next:0, event:'rest'}
+        ]}
+    ],
+    2: [
+        {type:'fight', text:'竹林中俠客邀你切磋武藝。', choices:[
+            {label:'切磋武藝', next:5, event:'fight'},
+            {label:'婉拒切磋', next:0, event:'rest'}
+        ]},
+        {type:'explore', text:'你在竹林發現白鶴羽毛。', choices:[
+            {label:'撿起羽毛', next:3, event:'explore'},
+            {label:'繼續修煉', next:0, event:'rest'}
+        ]},
+        {type:'rest', text:'你在竹林打坐，感受自然之力。', choices:[
+            {label:'繼續打坐', next:0, event:'rest'},
+            {label:'前往山谷', next:1, event:'adventure'}
+        ]},
+        {type:'special', text:'你在竹林深處發現一顆靈丹妙藥。', choices:[
+            {label:'服用靈丹', next:0, event:'elixir'},
+            {label:'留著備用', next:0, event:'rest'}
+        ]}
+    ],
+    3: [
+        {type:'explore', text:'溪邊白鶴起舞，似乎在暗示你什麼。', choices:[
+            {label:'靠近白鶴', next:6, event:'explore'},
+            {label:'靜觀其變', next:0, event:'rest'}
+        ]},
+        {type:'adventure', text:'你在溪邊發現靈草。', choices:[
+            {label:'採集靈草', next:0, event:'adventure'},
+            {label:'打坐冥想', next:0, event:'rest'}
+        ]},
+        {type:'rest', text:'你在溪邊打坐，感受天地靈氣。', choices:[
+            {label:'繼續打坐', next:0, event:'rest'},
+            {label:'前往竹林', next:2, event:'explore'}
+        ]},
+        {type:'special', text:'你在溪邊發現一顆靈丹妙藥。', choices:[
+            {label:'服用靈丹', next:0, event:'elixir'},
+            {label:'留著備用', next:0, event:'rest'}
+        ]}
+    ],
+    4: [
+        {type:'fight', text:'你與妖獸激戰，是否全力出招？', choices:[
+            {label:'全力出招', next:1, event:'fight'},
+            {label:'撤退', next:0, event:'rest'}
+        ]},
+        {type:'adventure', text:'你在山谷深處發現神鶴令。', choices:[
+            {label:'拾取神鶴令', next:0, event:'adventure'},
+            {label:'繼續冒險', next:1, event:'adventure'}
+        ]},
+        {type:'special', text:'你在妖獸屍體上發現一顆靈丹妙藥。', choices:[
+            {label:'服用靈丹', next:0, event:'elixir'},
+            {label:'留著備用', next:0, event:'rest'}
+        ]}
+    ],
+    5: [
+        {type:'fight', text:'俠客使出玄鐵重劍，是否迎戰？', choices:[
+            {label:'迎戰玄鐵重劍', next:2, event:'fight'},
+            {label:'見好就收', next:0, event:'rest'}
+        ]},
+        {type:'rest', text:'你與俠客切磋後休息。', choices:[
+            {label:'繼續休息', next:0, event:'rest'},
+            {label:'前往溪邊', next:3, event:'explore'}
+        ]}
+    ],
+    6: [
+        {type:'explore', text:'白鶴贈你羽衣。', choices:[
+            {label:'接受羽衣', next:0, event:'explore'},
+            {label:'婉拒羽衣', next:0, event:'rest'}
+        ]},
+        {type:'rest', text:'你在白鶴身旁打坐。', choices:[
+            {label:'繼續打坐', next:0, event:'rest'},
+            {label:'前往山谷', next:1, event:'adventure'}
+        ]}
+    ],
+    7: [
+        {type:'fight', text:'妖獸咆哮，戰鬥一觸即發。', choices:[
+            {label:'奮力一搏', next:1, event:'fight'},
+            {label:'撤退', next:0, event:'rest'}
+        ]}
+    ]
+};
+
+function getRandomEvent(type){
+    // type: adventure, fight, rest, explore, elixir
+    let equip = window._equipBonus || {atk:0, def:0, lvl:0};
+    let r = Math.random();
+    // 壽命每次事件減少
+    loseLife(1);
+    // 死亡率根據裝備降低
+    let deathRate = 0.13; // 基礎死亡率
+    deathRate -= equip.lvl*0.01 + equip.def*0.002 + equip.atk*0.001;
+    if(deathRate < 0.03) deathRate = 0.03;
+    if(type==='adventure'){
+        if(r<deathRate) return {type:'death'};
+        if(r<deathRate+0.18) return {type:'points', amount:getRandom(200,400)};
+        if(r<deathRate+0.28) return {type:'item', name:'神鶴令'};
+        if(r<deathRate+0.38) return {type:'lose', amount:getRandom(100,200)};
+        if(r<deathRate+0.43) return {type:'elixir'}; // 靈丹妙藥事件
+        return {type:'peace'};
+    }
+    if(type==='fight'){
+        let fightDeath = deathRate+0.05;
+        if(r<fightDeath) return {type:'death'};
+        if(r<fightDeath+0.22) return {type:'points', amount:getRandom(300,600)};
+        if(r<fightDeath+0.32) return {type:'item', name:'玄鐵重劍'};
+        if(r<fightDeath+0.45) return {type:'lose', amount:getRandom(150,300)};
+        if(r<fightDeath+0.50) return {type:'elixir'};
+        return {type:'peace'};
+    }
+    if(type==='explore'){
+        if(r<0.08) return {type:'points', amount:getRandom(100,200)};
+        if(r<0.16) return {type:'item', name:'白鶴羽衣'};
+        if(r<0.20) return {type:'elixir'};
+        return {type:'peace'};
+    }
+    if(type==='rest'){
+        if(r<0.05) return {type:'elixir'};
+        return {type:'peace'};
+    }
+    if(type==='elixir'){
+        return {type:'elixir'};
+    }
+    return {type:'peace'};
+}
+function addItem(itemName, callback){
+    fetch('shop.php')
+    .then(res=>res.json())
+    .then(data=>{
+        let item = (data.products||[]).find(p=>p.name===itemName);
+        if(item){
+            fetch('shop.php', {
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                body:'buy=1&product_id='+item.product_id
+            }).then(()=>{
+                fetchInventory(callback);
+            });
+        }else{
+            callback && callback();
+        }
+    });
+}
+function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+}
+function showStory(step){
+    if(isDead || life<=0){
+        document.getElementById('story').innerHTML = '你壽元已盡，魂歸九天。<br><span class="text-danger fw-bold">【死亡結局】</span>';
+        document.getElementById('choices').innerHTML = '<a href="shop.html" class="btn btn-success mt-3">回商城再準備</a>';
+        return;
+    }
+    if(hasTicket){
+        document.getElementById('story').innerHTML = '你持有結局券，領悟修仙真諦，飛昇成仙，永享逍遙！<br><span class="text-success fw-bold">【飛昇結局】</span>';
+        document.getElementById('choices').innerHTML = '<a href="shop.html" class="btn btn-success mt-3">回商城</a>';
+        return;
+    }
+    // 隨機取一個事件（避免重複）
+    let pool = eventPool[step] || eventPool[0];
+    let idx = getRandom(0, pool.length-1);
+    let eventObj = pool[idx];
+    let storyText = eventObj.text;
+    let choices = shuffle(eventObj.choices.slice());
+    document.getElementById('story').className = 'fade-in';
+    document.getElementById('story').innerHTML = storyText;
+    updateLifeIndicator();
+    const choicesDiv = document.getElementById('choices');
+    choicesDiv.innerHTML = '';
+    choices.forEach(c=>{
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline-primary me-2 mb-2';
+        btn.innerText = c.label;
+        btn.onclick = ()=>{
+            let eventResult = getRandomEvent(c.event);
+            if(eventResult.type==='death'){
+                document.getElementById('story').className = 'fade-in';
+                isDead = true;
+                showStory(c.next);
+                return;
+            }
+            if(eventResult.type==='points'){
+                document.getElementById('story').className = 'flash fade-in';
+                document.getElementById('story').innerHTML = `你獲得了${eventResult.amount}商城點數！`;
+                addPoints(eventResult.amount, ()=>showStory(c.next));
+                return;
+            }
+            if(eventResult.type==='lose'){
+                document.getElementById('story').className = 'flash fade-in';
+                document.getElementById('story').innerHTML = `你受傷失去${eventResult.amount}商城點數！`;
+                losePoints(eventResult.amount, ()=>showStory(c.next));
+                return;
+            }
+            if(eventResult.type==='item'){
+                document.getElementById('story').className = 'fade-in';
+                document.getElementById('story').innerHTML = `你獲得了稀有裝備【${eventResult.name}】！`;
+                addItem(eventResult.name, ()=>showStory(c.next));
+                return;
+            }
+            if(eventResult.type==='elixir'){
+                document.getElementById('story').className = 'fade-in';
+                document.getElementById('story').innerHTML = `你獲得了靈丹妙藥，壽命增加5！`;
+                addLife(5);
+                showStory(c.next);
+                return;
+            }
+            // 其餘和平事件
+            document.getElementById('story').className = 'fade-in';
+            fetchInventory(()=>showStory(c.next));
+        };
+        choicesDiv.appendChild(btn);
+    });
+}
+function logout(){
+    fetch('logout.php').then(()=>location.href='login.html');
+}
+function startGame(){
+    life = 30; // 每次進入重設壽命
+    fetchInventory(()=>{
+        fetchPoints(()=>{
+            isDead = false;
+            hasTicket = userItems.some(x=>x.name==='結局券');
+            updateLifeIndicator();
+            showStory(0);
+        });
+    });
+}
+// 修仙小提示
+const tipsArr = [
+    "修仙之路，貴在堅持與悟道。",
+    "裝備提升可降低死亡風險，記得多多強化！",
+    "靈丹妙藥可延長壽命，商城與冒險皆可獲得。",
+    "商城分類可快速尋找所需裝備。",
+    "壽命歸零即結束，請謹慎選擇每一步。",
+    "結局券可助你飛昇成仙，快去尋找吧！",
+    "冒險途中多留意特殊事件，機會難得。",
+    "點數可用於購買強力裝備與珍稀道具。",
+    "善用背包，合理搭配裝備，事半功倍。",
+    "修仙不易，心態平和最重要。"
+];
+function showRandomTip() {
+    const tip = tipsArr[Math.floor(Math.random()*tipsArr.length)];
+    document.getElementById('tipsBox').innerHTML =
+        `<div class="tips-box-title">修仙小提示</div><div>${tip}</div>`;
+}
+showRandomTip();
+startGame();
+</script>
+</body>
+</html>
+</body>
+</html>
