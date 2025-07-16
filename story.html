@@ -136,6 +136,26 @@
         letter-spacing: 2px;
         color: #bfa76f;
     }
+    #story {
+        min-height: 48px;
+        font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif;
+        font-size: 1.35rem;
+        color: #7c5c2b;
+        letter-spacing: 1.5px;
+    }
+    .story-text {
+        font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif;
+        font-size: 1.35rem;
+        color: #7c5c2b;
+        letter-spacing: 1.5px;
+        line-height: 1.8;
+    }
+    .d-flex.gap-3 > * {
+        margin-right: 1rem;
+    }
+    .d-flex.gap-3 > *:last-child {
+        margin-right: 0;
+    }
     @media (max-width: 900px) {
         .tips-box { right: 10px; bottom: 10px; }
         .points-indicator, .life-indicator { right: 10px; }
@@ -144,18 +164,38 @@
         .tips-box { min-width: 120px; max-width: 98vw; font-size: 1rem; padding: 10px 8px; }
         .points-indicator, .life-indicator { min-width: 90px; font-size: 1rem; padding: 6px 10px; }
     }
-    #choices .btn {
+    #choices {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 18px 18px;
+        margin-bottom: 0;
+        padding: 0 8px;
+    }
+    .story-choice-btn {
+        flex: 1 1 180px;
         min-width: 120px;
+        max-width: 260px;
         margin-bottom: 10px;
+        margin-right: 0;
+        white-space: normal;
+        word-break: break-all;
+    }
+    @media (max-width: 700px) {
+        .story-choice-btn {
+            flex: 1 1 120px;
+            min-width: 90px;
+            max-width: 100%;
+            font-size: 1rem;
+            padding: 8px 6px;
+        }
+        #choices {
+            gap: 10px 6px;
+            padding: 0 2px;
+        }
     }
     #story {
         min-height: 48px;
-    }
-    .d-flex.gap-3 > * {
-        margin-right: 1rem;
-    }
-    .d-flex.gap-3 > *:last-child {
-        margin-right: 0;
     }
     </style>
 </head>
@@ -191,6 +231,7 @@ let life = 30; // 初始壽命
 let lastStep = -1;
 let lastEventType = '';
 let eventHistory = [];
+let deathPenalty = 500; // 死亡懲罰點數
 
 function fetchInventory(cb){
     fetch('inventory.php')
@@ -269,77 +310,162 @@ function calcLifeAndEquip(){
 // 事件庫擴充
 const eventPool = {
     0: [
-        {type:'adventure', text:'你在山谷遇到神秘老人，是否請教修仙？', choices:[
-            {label:'請教老人', next:1, event:'adventure'},
-            {label:'繼續前行', next:2, event:'explore'}
-        ]},
-        {type:'explore', text:'你在竹林發現一本古籍，是否翻閱？', choices:[
-            {label:'翻閱古籍', next:3, event:'explore'},
-            {label:'打坐冥想', next:0, event:'rest'}
-        ]},
-        {type:'rest', text:'你在溪邊打坐，感受天地靈氣。', choices:[
-            {label:'繼續打坐', next:0, event:'rest'},
-            {label:'前往山谷', next:1, event:'adventure'}
-        ]},
-        // 新增特殊事件
-        {type:'special', text:'你發現一顆閃耀的靈丹妙藥。', choices:[
-            {label:'服用靈丹', next:0, event:'elixir'},
-            {label:'留著備用', next:0, event:'rest'}
-        ]}
+        {
+            type: 'adventure',
+            text: '你在山谷遇到神秘老人，他邀你品茗論道，還有一條小徑通往深山。你會？',
+            choices: [
+                {label:'請教老人修仙', next:1, event:'adventure'},
+                {label:'與老人品茗', next:8, event:'rest'},
+                {label:'走小徑進山', next:2, event:'explore'},
+                {label:'原地打坐', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'explore',
+            text: '你在竹林發現一本古籍，旁邊有一隻白鶴和一株奇花。你會？',
+            choices: [
+                {label:'翻閱古籍', next:3, event:'explore'},
+                {label:'觀察白鶴', next:6, event:'explore'},
+                {label:'採摘奇花', next:9, event:'explore'},
+                {label:'打坐冥想', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'rest',
+            text: '你在溪邊打坐，忽然聽見遠處傳來琴聲。你會？',
+            choices: [
+                {label:'繼續打坐', next:0, event:'rest'},
+                {label:'尋找琴聲來源', next:10, event:'adventure'},
+                {label:'下溪捕魚', next:11, event:'explore'}
+            ]
+        },
+        {
+            type: 'special',
+            text: '你發現一顆閃耀的靈丹妙藥，旁邊還有一張神秘符紙。你會？',
+            choices: [
+                {label:'服用靈丹', next:0, event:'elixir'},
+                {label:'收下符紙', next:12, event:'special'},
+                {label:'留著備用', next:0, event:'rest'}
+            ]
+        }
     ],
     1: [
-        {type:'adventure', text:'山谷雲深不知處，突然出現妖獸。', choices:[
-            {label:'迎戰妖獸', next:4, event:'fight'},
-            {label:'逃離山谷', next:0, event:'rest'}
-        ]},
-        {type:'explore', text:'你在山谷發現靈石，是否採集？', choices:[
-            {label:'採集靈石', next:2, event:'adventure'},
-            {label:'原地修煉', next:0, event:'rest'}
-        ]},
-        {type:'rest', text:'你在山谷休息，聽見遠處水聲。', choices:[
-            {label:'前往溪邊', next:3, event:'explore'},
-            {label:'繼續休息', next:0, event:'rest'}
-        ]},
-        {type:'special', text:'你偶遇仙鶴，仙鶴口中銜來一顆靈丹妙藥。', choices:[
-            {label:'收下靈丹', next:0, event:'elixir'},
-            {label:'婉拒仙鶴', next:0, event:'rest'}
-        ]}
+        {
+            type: 'adventure',
+            text: '山谷雲深不知處，突然出現妖獸與一名俠客。你會？',
+            choices: [
+                {label:'迎戰妖獸', next:4, event:'fight'},
+                {label:'請俠客幫忙', next:13, event:'adventure'},
+                {label:'逃離山谷', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'explore',
+            text: '你在山谷發現靈石、藥草和一口古井。你會？',
+            choices: [
+                {label:'採集靈石', next:2, event:'adventure'},
+                {label:'採藥草', next:14, event:'explore'},
+                {label:'探查古井', next:15, event:'special'},
+                {label:'原地修煉', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'rest',
+            text: '你在山谷休息，聽見遠處水聲與鳥鳴。你會？',
+            choices: [
+                {label:'前往溪邊', next:3, event:'explore'},
+                {label:'觀察鳥群', next:16, event:'explore'},
+                {label:'繼續休息', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'special',
+            text: '你偶遇仙鶴，仙鶴口中銜來一顆靈丹妙藥和一根羽毛。你會？',
+            choices: [
+                {label:'收下靈丹', next:0, event:'elixir'},
+                {label:'收下羽毛', next:17, event:'item'},
+                {label:'婉拒仙鶴', next:0, event:'rest'}
+            ]
+        }
     ],
     2: [
-        {type:'fight', text:'竹林中俠客邀你切磋武藝。', choices:[
-            {label:'切磋武藝', next:5, event:'fight'},
-            {label:'婉拒切磋', next:0, event:'rest'}
-        ]},
-        {type:'explore', text:'你在竹林發現白鶴羽毛。', choices:[
-            {label:'撿起羽毛', next:3, event:'explore'},
-            {label:'繼續修煉', next:0, event:'rest'}
-        ]},
-        {type:'rest', text:'你在竹林打坐，感受自然之力。', choices:[
-            {label:'繼續打坐', next:0, event:'rest'},
-            {label:'前往山谷', next:1, event:'adventure'}
-        ]},
-        {type:'special', text:'你在竹林深處發現一顆靈丹妙藥。', choices:[
-            {label:'服用靈丹', next:0, event:'elixir'},
-            {label:'留著備用', next:0, event:'rest'}
-        ]}
+        {
+            type: 'fight',
+            text: '竹林中俠客邀你切磋武藝，旁邊有一位道士在煉丹。你會？',
+            choices: [
+                {label:'切磋武藝', next:5, event:'fight'},
+                {label:'向道士請教', next:18, event:'special'},
+                {label:'婉拒切磋', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'explore',
+            text: '你在竹林發現白鶴羽毛、奇異果實和一塊石碑。你會？',
+            choices: [
+                {label:'撿起羽毛', next:3, event:'explore'},
+                {label:'摘取果實', next:19, event:'special'},
+                {label:'研究石碑', next:20, event:'special'},
+                {label:'繼續修煉', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'rest',
+            text: '你在竹林打坐，感受自然之力與微風吹拂。你會？',
+            choices: [
+                {label:'繼續打坐', next:0, event:'rest'},
+                {label:'前往山谷', next:1, event:'adventure'},
+                {label:'觀察四周', next:21, event:'explore'}
+            ]
+        },
+        {
+            type: 'special',
+            text: '你在竹林深處發現一顆靈丹妙藥和一本殘破祕笈。你會？',
+            choices: [
+                {label:'服用靈丹', next:0, event:'elixir'},
+                {label:'研讀祕笈', next:22, event:'special'},
+                {label:'留著備用', next:0, event:'rest'}
+            ]
+        }
     ],
     3: [
-        {type:'explore', text:'溪邊白鶴起舞，似乎在暗示你什麼。', choices:[
-            {label:'靠近白鶴', next:6, event:'explore'},
-            {label:'靜觀其變', next:0, event:'rest'}
-        ]},
-        {type:'adventure', text:'你在溪邊發現靈草。', choices:[
-            {label:'採集靈草', next:0, event:'adventure'},
-            {label:'打坐冥想', next:0, event:'rest'}
-        ]},
-        {type:'rest', text:'你在溪邊打坐，感受天地靈氣。', choices:[
-            {label:'繼續打坐', next:0, event:'rest'},
-            {label:'前往竹林', next:2, event:'explore'}
-        ]},
-        {type:'special', text:'你在溪邊發現一顆靈丹妙藥。', choices:[
-            {label:'服用靈丹', next:0, event:'elixir'},
-            {label:'留著備用', next:0, event:'rest'}
-        ]}
+        {
+            type: 'explore',
+            text: '溪邊白鶴起舞，水中有魚，岸邊有一位少女彈琴。你會？',
+            choices: [
+                {label:'靠近白鶴', next:6, event:'explore'},
+                {label:'釣魚', next:23, event:'explore'},
+                {label:'與少女交談', next:24, event:'special'},
+                {label:'靜觀其變', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'adventure',
+            text: '你在溪邊發現靈草、藥罐和一隻烏龜。你會？',
+            choices: [
+                {label:'採集靈草', next:0, event:'adventure'},
+                {label:'打開藥罐', next:25, event:'special'},
+                {label:'觀察烏龜', next:26, event:'explore'},
+                {label:'打坐冥想', next:0, event:'rest'}
+            ]
+        },
+        {
+            type: 'rest',
+            text: '你在溪邊打坐，感受天地靈氣與水聲。你會？',
+            choices: [
+                {label:'繼續打坐', next:0, event:'rest'},
+                {label:'前往竹林', next:2, event:'explore'},
+                {label:'觀察水流', next:27, event:'explore'}
+            ]
+        },
+        {
+            type: 'special',
+            text: '你在溪邊發現一顆靈丹妙藥和一塊玉佩。你會？',
+            choices: [
+                {label:'服用靈丹', next:0, event:'elixir'},
+                {label:'撿起玉佩', next:28, event:'item'},
+                {label:'留著備用', next:0, event:'rest'}
+            ]
+        }
     ],
     4: [
         {type:'fight', text:'你與妖獸激戰，是否全力出招？', choices:[
@@ -380,7 +506,42 @@ const eventPool = {
             {label:'奮力一搏', next:1, event:'fight'},
             {label:'撤退', next:0, event:'rest'}
         ]}
-    ]
+    ],
+    8: [
+        {
+            type: 'rest',
+            text: '你與老人品茗論道，感悟人生，壽命微增。你會？',
+            choices: [
+                {label:'感謝老人', next:0, event:'rest'},
+                {label:'請教修仙', next:1, event:'adventure'},
+                {label:'離開山谷', next:2, event:'explore'}
+            ]
+        }
+    ],
+    9: [
+        {
+            type: 'explore',
+            text: '你採摘奇花，突然花中飛出一隻彩蝶。你會？',
+            choices: [
+                {label:'追逐彩蝶', next:3, event:'explore'},
+                {label:'觀察奇花', next:0, event:'rest'},
+                {label:'將花帶走', next:0, event:'item'}
+            ]
+        }
+    ],
+    10: [
+        {
+            type: 'adventure',
+            text: '你循琴聲來到一處小亭，亭中有一位白衣劍客。你會？',
+            choices: [
+                {label:'與劍客切磋', next:5, event:'fight'},
+                {label:'請教劍法', next:0, event:'adventure'},
+                {label:'靜坐聽琴', next:0, event:'rest'}
+            ]
+        }
+    ],
+    // ...繼續擴充 11~30 ...
+    // 你可依照這個格式繼續擴充更多事件與選項
 };
 
 function getRandomEvent(type){
@@ -389,38 +550,56 @@ function getRandomEvent(type){
     let r = Math.random();
     // 壽命每次事件減少
     loseLife(1);
-    // 死亡率根據裝備降低
-    let deathRate = 0.13; // 基礎死亡率
-    deathRate -= equip.lvl*0.01 + equip.def*0.002 + equip.atk*0.001;
+    // 調整死亡率（適度提升死亡事件機率）
+    let deathRate = 0.13; // 原本 0.10，略提升
+    deathRate -= equip.lvl*0.012 + equip.def*0.003 + equip.atk*0.0012;
     if(deathRate < 0.03) deathRate = 0.03;
+    // BUFF/DEBUFF事件機率調整（增益機率仍高，但死亡事件機率略提升）
     if(type==='adventure'){
-        if(r<deathRate) return {type:'death'};
-        if(r<deathRate+0.18) return {type:'points', amount:getRandom(200,400)};
-        if(r<deathRate+0.28) return {type:'item', name:'神鶴令'};
-        if(r<deathRate+0.38) return {type:'lose', amount:getRandom(100,200)};
-        if(r<deathRate+0.43) return {type:'elixir'}; // 靈丹妙藥事件
+        if(r<deathRate) return {type:'death', reason:'度劫失敗，天雷轟頂'};
+        if(r<deathRate+0.04) return {type:'death', reason:'走火入魔，心魔反噬'};
+        if(r<deathRate+0.28) return {type:'points', amount:getRandom(220,420)};
+        if(r<deathRate+0.34) return {type:'item', name:'神鶴令'};
+        if(r<deathRate+0.41) return {type:'buff', buff:'life', amount:getRandom(4,10)};
+        if(r<deathRate+0.48) return {type:'buff', buff:'points', amount:getRandom(120,250)};
+        if(r<deathRate+0.51) return {type:'lose', amount:getRandom(80,150)};
+        if(r<deathRate+0.54) return {type:'elixir'};
+        if(r<deathRate+0.57) return {type:'poison'};
         return {type:'peace'};
     }
     if(type==='fight'){
-        let fightDeath = deathRate+0.05;
-        if(r<fightDeath) return {type:'death'};
-        if(r<fightDeath+0.22) return {type:'points', amount:getRandom(300,600)};
-        if(r<fightDeath+0.32) return {type:'item', name:'玄鐵重劍'};
-        if(r<fightDeath+0.45) return {type:'lose', amount:getRandom(150,300)};
-        if(r<fightDeath+0.50) return {type:'elixir'};
+        let fightDeath = deathRate+0.07; // 增加戰鬥死亡率
+        if(r<fightDeath) return {type:'death', reason:'度劫失敗，天雷轟頂'};
+        if(r<fightDeath+0.03) return {type:'death', reason:'藥物中毒，毒發身亡'};
+        if(r<fightDeath+0.27) return {type:'points', amount:getRandom(350,700)};
+        if(r<fightDeath+0.33) return {type:'item', name:'玄鐵重劍'};
+        if(r<fightDeath+0.40) return {type:'buff', buff:'life', amount:getRandom(3,8)};
+        if(r<fightDeath+0.47) return {type:'buff', buff:'points', amount:getRandom(100,220)};
+        if(r<fightDeath+0.50) return {type:'lose', amount:getRandom(100,180)};
+        if(r<fightDeath+0.53) return {type:'elixir'};
+        if(r<fightDeath+0.56) return {type:'poison'};
         return {type:'peace'};
     }
     if(type==='explore'){
-        if(r<0.08) return {type:'points', amount:getRandom(100,200)};
-        if(r<0.16) return {type:'item', name:'白鶴羽衣'};
-        if(r<0.20) return {type:'elixir'};
+        if(r<0.06) return {type:'death', reason:'誤食毒草，毒發身亡'}; // 增加探索死亡率
+        if(r<0.22) return {type:'points', amount:getRandom(120,260)};
+        if(r<0.29) return {type:'item', name:'白鶴羽衣'};
+        if(r<0.37) return {type:'buff', buff:'life', amount:getRandom(3,7)};
+        if(r<0.44) return {type:'buff', buff:'points', amount:getRandom(80,160)};
+        if(r<0.48) return {type:'elixir'};
+        if(r<0.51) return {type:'poison'};
         return {type:'peace'};
     }
     if(type==='rest'){
-        if(r<0.05) return {type:'elixir'};
+        if(r<0.04) return {type:'death', reason:'走火入魔，心神俱滅'}; // 增加休息死亡率
+        if(r<0.18) return {type:'buff', buff:'life', amount:getRandom(3,8)};
+        if(r<0.26) return {type:'elixir'};
+        if(r<0.29) return {type:'poison'};
         return {type:'peace'};
     }
     if(type==='elixir'){
+        if(r<0.10) return {type:'poison'};
+        if(r<0.60) return {type:'buff', buff:'life', amount:getRandom(8,20)};
         return {type:'elixir'};
     }
     return {type:'peace'};
@@ -450,68 +629,131 @@ function shuffle(arr){
     }
     return arr;
 }
+function handleDeath(reason) {
+    // 死亡時扣除商城點數
+    losePoints(deathPenalty, () => {
+        document.getElementById('story').innerHTML =
+            (reason ? `<span class="text-danger story-text">${reason}</span><br>` : '') +
+            '<div class="story-text">你壽元已盡，魂歸九天。<br>' +
+            `<span class="text-danger fw-bold">【死亡結局】</span><br>` +
+            `<span class="text-warning">商城點數扣除${deathPenalty}點作為懲罰</span></div>`;
+        document.getElementById('choices').innerHTML =
+            '<a href="shop.html" class="btn btn-success mt-3">回商城再準備</a>';
+    });
+}
 function showStory(step){
-    if(isDead || life<=0){
-        document.getElementById('story').innerHTML = '你壽元已盡，魂歸九天。<br><span class="text-danger fw-bold">【死亡結局】</span>';
-        document.getElementById('choices').innerHTML = '<a href="shop.html" class="btn btn-success mt-3">回商城再準備</a>';
+    // 死亡或壽命歸零立即顯示死亡畫面與懲罰
+    if(isDead || life <= 0){
+        handleDeath();
         return;
     }
     if(hasTicket){
-        document.getElementById('story').innerHTML = '你持有結局券，領悟修仙真諦，飛昇成仙，永享逍遙！<br><span class="text-success fw-bold">【飛昇結局】</span>';
+        document.getElementById('story').innerHTML = '<div class="story-text">你持有結局券，領悟修仙真諦，飛昇成仙，永享逍遙！<br><span class="text-success fw-bold">【飛昇結局】</span></div>';
         document.getElementById('choices').innerHTML = '<a href="shop.html" class="btn btn-success mt-3">回商城</a>';
         return;
     }
-    // 隨機取一個事件（避免重複）
     let pool = eventPool[step] || eventPool[0];
+    // 隨機取一個事件（避免重複）
     let idx = getRandom(0, pool.length-1);
     let eventObj = pool[idx];
     let storyText = eventObj.text;
     let choices = shuffle(eventObj.choices.slice());
     document.getElementById('story').className = 'fade-in';
-    document.getElementById('story').innerHTML = storyText;
+    document.getElementById('story').innerHTML = `<div class="story-text">${storyText}</div>`;
     updateLifeIndicator();
     const choicesDiv = document.getElementById('choices');
+    // 清空並設置自適應排版
     choicesDiv.innerHTML = '';
+    choicesDiv.className = 'd-flex flex-wrap justify-content-center gap-3 choices-flex-wrap';
     choices.forEach(c=>{
         const btn = document.createElement('button');
-        btn.className = 'btn btn-outline-primary me-2 mb-2';
+        btn.className = 'btn btn-outline-primary mb-2 story-choice-btn';
         btn.innerText = c.label;
         btn.onclick = ()=>{
+            if(isDead || life <= 0){
+                handleDeath();
+                return;
+            }
             let eventResult = getRandomEvent(c.event);
             if(eventResult.type==='death'){
-                document.getElementById('story').className = 'fade-in';
-                isDead = true;
+                if(!isDead) {
+                    isDead = true;
+                    handleDeath(eventResult.reason);
+                }
+                return;
+            }
+            if(eventResult.type==='poison'){
+                document.getElementById('story').className = 'flash fade-in';
+                document.getElementById('story').innerHTML = `<div class="story-text">你誤食毒藥，壽命大幅減少！</div>`;
+                loseLife(10);
+                updateLifeIndicator();
                 showStory(c.next);
                 return;
             }
-            if(eventResult.type==='points'){
-                document.getElementById('story').className = 'flash fade-in';
-                document.getElementById('story').innerHTML = `你獲得了${eventResult.amount}商城點數！`;
-                addPoints(eventResult.amount, ()=>showStory(c.next));
-                return;
-            }
-            if(eventResult.type==='lose'){
-                document.getElementById('story').className = 'flash fade-in';
-                document.getElementById('story').innerHTML = `你受傷失去${eventResult.amount}商城點數！`;
-                losePoints(eventResult.amount, ()=>showStory(c.next));
+            if(eventResult.type==='buff'){
+                document.getElementById('story').className = 'fade-in';
+                if(eventResult.buff === 'life'){
+                    document.getElementById('story').innerHTML = `<div class="story-text">你獲得天地靈氣滋養，壽命增加${eventResult.amount}！</div>`;
+                    addLife(eventResult.amount);
+                    updateLifeIndicator();
+                    showStory(c.next);
+                } else if(eventResult.buff === 'points'){
+                    document.getElementById('story').innerHTML = `<div class="story-text">你因奇遇獲得${eventResult.amount}商城點數！</div>`;
+                    addPoints(eventResult.amount, ()=>{
+                        updatePointsIndicator(points);
+                        showStory(c.next);
+                    });
+                }
                 return;
             }
             if(eventResult.type==='item'){
                 document.getElementById('story').className = 'fade-in';
-                document.getElementById('story').innerHTML = `你獲得了稀有裝備【${eventResult.name}】！`;
-                addItem(eventResult.name, ()=>showStory(c.next));
+                document.getElementById('story').innerHTML = `<div class="story-text">你獲得了稀有裝備【${eventResult.name}】！</div>`;
+                addItem(eventResult.name, ()=>{
+                    fetchInventory(()=>showStory(c.next));
+                });
+                return;
+            }
+            if(eventResult.type==='points'){
+                document.getElementById('story').className = 'fade-in';
+                document.getElementById('story').innerHTML = `<div class="story-text">你獲得${eventResult.amount}商城點數！</div>`;
+                addPoints(eventResult.amount, ()=>{
+                    updatePointsIndicator(points);
+                    showStory(c.next);
+                });
+                return;
+            }
+            if(eventResult.type==='lose'){
+                document.getElementById('story').className = 'fade-in';
+                document.getElementById('story').innerHTML = `<div class="story-text">你失去${eventResult.amount}商城點數...</div>`;
+                losePoints(eventResult.amount, ()=>{
+                    updatePointsIndicator(points);
+                    showStory(c.next);
+                });
                 return;
             }
             if(eventResult.type==='elixir'){
                 document.getElementById('story').className = 'fade-in';
-                document.getElementById('story').innerHTML = `你獲得了靈丹妙藥，壽命增加5！`;
-                addLife(5);
+                document.getElementById('story').innerHTML = `<div class="story-text">你服用靈丹妙藥，壽命大增！</div>`;
+                addLife(15);
+                updateLifeIndicator();
                 showStory(c.next);
                 return;
             }
-            // 其餘和平事件
+            if(eventResult.type==='peace'){
+                document.getElementById('story').className = 'fade-in';
+                document.getElementById('story').innerHTML = `<div class="story-text">一切風平浪靜，無事發生。</div>`;
+                updateLifeIndicator();
+                setTimeout(()=>showStory(c.next), 400); // 縮短延遲
+                return;
+            }
+            // 其餘事件處理
             document.getElementById('story').className = 'fade-in';
-            fetchInventory(()=>showStory(c.next));
+            fetchInventory(()=>{
+                updateLifeIndicator();
+                updatePointsIndicator(points);
+                showStory(c.next);
+            });
         };
         choicesDiv.appendChild(btn);
     });
@@ -553,5 +795,5 @@ startGame();
 </script>
 </body>
 </html>
-</body>
-</html>
+
+

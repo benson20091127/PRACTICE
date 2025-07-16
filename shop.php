@@ -1,13 +1,17 @@
 <?php
-session_start();
+error_reporting(0);
+ini_set('display_errors', 0);
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 header('Content-Type: application/json');
 try {
-    $pdo = new PDO('mysql:host=localhost;dbname=xiuxian;charset=utf8mb4', 'admin', '12345');
+    $pdo = new PDO('mysql:host=localhost;dbname=xiuxian;charset=utf8mb4', 'root', '');
 } catch (Exception $e) {
     echo json_encode(['status'=>-1, 'error'=>'資料庫連線錯誤']);
     exit;
 }
 $member_id = $_SESSION['member_id'] ?? 0;
+// debug
+// echo json_encode(['debug_member_id'=>$member_id]); exit;
 if(!$member_id){
     echo json_encode(['status'=>0, 'message'=>'請先登入']);
     exit;

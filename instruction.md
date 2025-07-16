@@ -164,7 +164,7 @@ erDiagram
     products {
         INT product_id PK
         VARCHAR name
-        ENUM type
+        ENUM type "武器|防具|祕笈"
         INT attack
         INT defense
         INT level
@@ -178,8 +178,40 @@ erDiagram
         DATETIME acquired_at
     }
 
+    members ||--o{ inventory : owns
+    products ||--o{ inventory : contains
+
+
+erDiagram
+    members {
+        INT member_id PK "會員編號"
+        VARCHAR username "登入帳號"
+        VARCHAR password "密碼（明碼）"
+        VARCHAR nickname "遊戲暱稱"
+        INT points "商城點數"
+        DATETIME created_at "註冊時間"
+    }
+
+    products {
+        INT product_id PK "商品編號"
+        VARCHAR name "商品名稱"
+        ENUM type "商品類型: 武器|防具|祕笈"
+        INT attack "攻擊值"
+        INT defense "防禦值"
+        INT level "裝備等級"
+        INT price "價格（點數）"
+    }
+
+    inventory {
+        INT inventory_id PK "背包紀錄編號"
+        INT member_id FK "關聯會員編號"
+        INT product_id FK "關聯商品編號"
+        DATETIME acquired_at "取得時間"
+    }
+
     members ||--o{ inventory : 擁有
     products ||--o{ inventory : 包含
+
 ```
 
 ---

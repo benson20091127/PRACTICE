@@ -1,9 +1,10 @@
 <?php
 header('Content-Type: application/json');
 try {
-    $pdo = new PDO('mysql:host=localhost;dbname=xiuxian;charset=utf8mb4', 'admin', '12345');
+    $pdo = new PDO('mysql:host=localhost;dbname=xiuxian;charset=utf8mb4', 'root', '');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (Exception $e) {
-    echo json_encode(['status'=>-1, 'error'=>'資料庫連線錯誤']);
+    echo json_encode(['status'=>-1, 'error'=>'資料庫連線錯誤', 'detail'=>$e->getMessage()]);
     exit;
 }
 $username = $_POST['username'] ?? '';
@@ -20,8 +21,12 @@ if($stmt->fetch()){
     exit;
 }
 $stmt = $pdo->prepare('INSERT INTO members (username, password, nickname) VALUES (?, ?, ?)');
-if($stmt->execute([$username, $password, $nickname])){
-    echo json_encode(['status'=>1, 'message'=>'註冊成功']);
-} else {
-    echo json_encode(['status'=>0, 'message'=>'註冊失敗']);
+try {
+    if($stmt->execute([$username, $password, $nickname])){
+        echo json_encode(['status'=>1, 'message'=>'註冊成功']);
+    } else {
+        echo json_encode(['status'=>0, 'message'=>'註冊失敗']);
+    }
+} catch (Exception $e) {
+    echo json_encode(['status'=>0, 'message'=>'註冊失敗', 'error'=>$e->getMessage()]);
 }
