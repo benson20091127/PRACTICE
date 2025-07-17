@@ -49,5 +49,15 @@ $member = $stmt->fetch(PDO::FETCH_ASSOC);
 $points = $member['points'];
 $level = $member['level'];
 $exp = $member['exp'] ?? 0;
-$products = $pdo->query('SELECT * FROM products')->fetchAll(PDO::FETCH_ASSOC);
+
+// 只顯示等級可購買商品（管理員例外）
+if ($level >= 99) {
+    // 管理員等級(99以上)可看全部
+    $products = $pdo->query('SELECT * FROM products')->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $stmt = $pdo->prepare('SELECT * FROM products WHERE level <= ?');
+    $stmt->execute([$level]);
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 echo json_encode(['status'=>1, 'points'=>$points, 'products'=>$products, 'level'=>$level, 'exp'=>$exp]);
