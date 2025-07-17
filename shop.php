@@ -18,18 +18,22 @@ if(!$member_id){
 }
 if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['buy'])){
     $pid = intval($_POST['product_id'] ?? 0);
-    $stmt = $pdo->prepare('SELECT price FROM products WHERE product_id=?');
+    $stmt = $pdo->prepare('SELECT price, level FROM products WHERE product_id=?');
     $stmt->execute([$pid]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
     if(!$product){
         echo json_encode(['status'=>0, 'message'=>'商品不存在']);
         exit;
     }
-    $stmt = $pdo->prepare('SELECT points FROM members WHERE member_id=?');
+    $stmt = $pdo->prepare('SELECT points, level FROM members WHERE member_id=?');
     $stmt->execute([$member_id]);
     $member = $stmt->fetch(PDO::FETCH_ASSOC);
     if($member['points'] < $product['price']){
         echo json_encode(['status'=>0, 'message'=>'點數不足']);
+        exit;
+    }
+    if($member['level'] < $product['level']){
+        echo json_encode(['status'=>0, 'message'=>'等級不足，無法購買此商品']);
         exit;
     }
     $pdo->beginTransaction();
@@ -39,8 +43,11 @@ if($_SERVER['REQUEST_METHOD']=='POST' && isset($_POST['buy'])){
     echo json_encode(['status'=>1, 'message'=>'購買成功']);
     exit;
 }
-$stmt = $pdo->prepare('SELECT points FROM members WHERE member_id=?');
+$stmt = $pdo->prepare('SELECT points, level, exp FROM members WHERE member_id=?');
 $stmt->execute([$member_id]);
-$points = $stmt->fetchColumn();
+$member = $stmt->fetch(PDO::FETCH_ASSOC);
+$points = $member['points'];
+$level = $member['level'];
+$exp = $member['exp'] ?? 0;
 $products = $pdo->query('SELECT * FROM products')->fetchAll(PDO::FETCH_ASSOC);
-echo json_encode(['status'=>1, 'points'=>$points, 'products'=>$products]);
+echo json_encode(['status'=>1, 'points'=>$points, 'products'=>$products, 'level'=>$level, 'exp'=>$exp]);

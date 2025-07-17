@@ -13,10 +13,13 @@
 <svg class="cloud-svg2" viewBox="0 0 140 90"><path fill="#bfa76f" d="M10,40 Q40,10 100,30 Q130,60 70,80 Q20,90 10,40 Z"/></svg>
 <div class="container mt-5">
     <h2 class="mb-4">商城</h2>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div id="points"></div>
-        <div>
-            <a href="story.html" class="btn btn-primary me-2">開始冒險</a>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <div class="d-flex flex-column">
+            <div id="pointsIndicator" style="font-size: 1.2rem; color: #7c5c2b; font-weight: bold; white-space: nowrap;">商城點數：載入中...</div>
+            <div id="levelIndicator" style="font-size: 1.1rem; color: #7c5c2b; font-weight: bold; margin-top: 3px; white-space: nowrap;">等級：載入中...</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="story.html" class="btn btn-primary">開始冒險</a>
             <button class="btn btn-outline-danger" onclick="logout()">登出</button>
         </div>
     </div>
@@ -30,7 +33,7 @@
     <table class="table table-bordered" id="productsTable">
         <thead>
             <tr>
-                <th>名稱</th><th>類型</th><th>攻擊</th><th>防禦</th><th>等級</th><th>價格</th><th>操作</th>
+                <th>名稱</th><th>類型</th><th>攻擊</th><th>防禦</th><th>需求等級</th><th>價格</th><th>操作</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -41,28 +44,51 @@
 <script>
 let allProducts = [];
 let currentCategory = '全部';
+let userLevel = 1;
+
 function loadShop(){
     fetch('shop.php')
     .then(res=>res.json())
     .then(data=>{
-        document.getElementById('points').innerHTML = '現有點數：<span class="fw-bold text-primary">'+data.points+'</span>';
-        allProducts = data.products || [];
-        showCategory(currentCategory);
+        if(data.status === 1) {
+            document.getElementById('pointsIndicator').innerHTML = '商城點數：' + data.points.toLocaleString();
+            document.getElementById('levelIndicator').innerHTML = '等級：Lv.' + data.level + ' (經驗：' + (data.exp || 0) + ')';
+            userLevel = data.level;
+            allProducts = data.products || [];
+            showCategory(currentCategory);
+        } else {
+            document.getElementById('msg').innerHTML = '<span class="text-danger">❌ ' + (data.message || '載入失敗') + '</span>';
+        }
+    })
+    .catch(err => {
+        document.getElementById('msg').innerHTML = '<span class="text-danger">❌ 網路錯誤</span>';
     });
 }
+
 function showCategory(cat){
     currentCategory = cat;
     const tbody = document.querySelector('#productsTable tbody');
     tbody.innerHTML = '';
     let filtered = (cat==='全部') ? allProducts : allProducts.filter(p=>p.type===cat);
     filtered.forEach(p=>{
+        // 檢查等級限制
+        let canBuy = userLevel >= p.level;
+        let btnClass = canBuy ? 'btn btn-sm btn-warning' : 'btn btn-sm btn-secondary disabled';
+        let btnText = canBuy ? '購買' : `需要Lv.${p.level}`;
+        let btnAction = canBuy ? `onclick="buy(${p.product_id})"` : 'disabled';
+        
         tbody.innerHTML += `<tr>
-            <td>${p.name}</td><td>${p.type}</td><td>${p.attack}</td><td>${p.defense}</td>
-            <td>${p.level}</td><td>${p.price}</td>
-            <td><button class="btn btn-sm btn-warning" onclick="buy(${p.product_id})">購買</button></td>
+            <td>${p.name}</td>
+            <td>${p.type}</td>
+            <td>${p.attack}</td>
+            <td>${p.defense}</td>
+            <td style="color: ${userLevel >= p.level ? '#28a745' : '#dc3545'}; font-weight: bold;">Lv.${p.level}</td>
+            <td>${p.price}</td>
+            <td><button class="${btnClass}" ${btnAction}>${btnText}</button></td>
         </tr>`;
     });
 }
+
 function buy(pid){
     fetch('shop.php', {
         method:'POST',
@@ -75,22 +101,25 @@ function buy(pid){
             ? '<span class="text-success">✅ '+data.message+'，自動進入冒險...</span>'
             : '<span class="text-danger">❌ '+(data.message||'購買失敗')+'</span>';
         if(data.status===1){
+            // 購買成功後重新載入商城資訊，確保等級同步
             loadShop();
             setTimeout(()=>location.href='story.html', 1200);
         }
     });
 }
+
 function logout(){
     fetch('logout.php').then(()=>location.href='login.html');
 }
+
 loadShop();
 </script>
 <style>
 body {
-    /* 古風背景漸層+花紋 */
     background: linear-gradient(135deg, #f8f4e6 0%, #e6d9b3 100%);
     background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
     font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif;
+    font-size: 1.2rem;
 }
 h2 {
     font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", serif;
@@ -98,19 +127,23 @@ h2 {
     text-shadow: 2px 2px 16px #e6d9b3, 0 0 2px #fff;
     border-bottom: 2px dashed #bfa76f;
     padding-bottom: 8px;
+    font-size: 2.5rem;
 }
 .table th, .table td {
-    font-family: "Noto Serif TC", "Ma Shan+
-    font-size: 1.08rem;
+    font-family: "Noto Serif TC", "Ma Shan Zheng", serif;
+    font-size: 1.1rem;
+    padding: 12px 8px;
+    vertical-align: middle;
 }
 .btn, .btn-outline-primary, .btn-outline-secondary, .btn-outline-danger, .btn-warning {
     border-radius: 24px;
     font-family: "Ma Shan Zheng", "Noto Serif TC", serif;
-    font-size: 1.08rem;
+    font-size: 1.1rem;
     letter-spacing: 2px;
     box-shadow: 0 2px 12px rgba(180,180,180,0.15);
     border-width: 2px;
     transition: transform 0.2s, box-shadow 0.2s;
+    padding: 10px 20px;
 }
 .btn-primary, .btn-warning {
     background: linear-gradient(90deg,#fffbe6 60%,#e6d9b3 100%);
@@ -120,7 +153,7 @@ h2 {
 .btn-primary:hover, .btn-warning:hover {
     background: #e6d9b3;
     color: #fff;
-    transform: scale(1.08);
+    transform: scale(1.05);
     box-shadow: 0 4px 24px rgba(120,180,255,0.25);
 }
 .btn-outline-secondary, .btn-outline-danger {
@@ -159,6 +192,12 @@ h2 {
     background-repeat: no-repeat;
     background-size: 120px 120px;
     background-position: top left;
+}
+#pointsIndicator, #levelIndicator {
+    font-size: 1.2rem;
+    color: #7c5c2b;
+    font-weight: bold;
+    white-space: nowrap;
 }
 </style>
 </body>

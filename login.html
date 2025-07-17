@@ -8,19 +8,96 @@
     <link href="style.css" rel="stylesheet">
     <style>
         body {
-            font-family: 'Noto Serif TC', serif;
+            font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif !important;
+            background: linear-gradient(135deg, #f8f4e6 0%, #e6d9b3 100%);
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            font-size: 1.35rem;
         }
+        
+        /* 背景圖片層 */
+        body::before {
+            content: '';
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
         h2, .login-title {
-            font-family: 'Ma Shan Zheng', 'Noto Serif TC', serif;
+            font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif !important;
             letter-spacing: 2px;
-            font-size: 2.2rem;
+            font-size: 3rem;
+            color: #7c5c2b;
+            text-shadow: 2px 2px 16px #e6d9b3, 0 0 2px #fff;
+            border-bottom: 2px dashed #bfa76f;
+            padding-bottom: 8px;
         }
         label, .form-label {
-            font-family: 'Noto Serif TC', serif;
+            font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif !important;
             font-weight: 700;
+            font-size: 1.25rem;
+            color: #7c5c2b;
         }
         .btn, input, .form-control, #msg, a {
-            font-family: 'Noto Serif TC', serif;
+            font-family: "Ma Shan Zheng", "Noto Serif TC", "STKaiti", "微軟正黑體", serif !important;
+            font-size: 1.18rem;
+        }
+        .container {
+            border: 3px solid #bfa76f;
+            border-radius: 24px;
+            background: rgba(255,255,240,0.95);
+            box-shadow: 0 12px 48px rgba(120,120,120,0.12);
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        .btn {
+            border-radius: 24px;
+            letter-spacing: 2px;
+            box-shadow: 0 2px 12px rgba(180,180,180,0.15);
+            border-width: 2px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 12px 28px;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg,#fffbe6 60%,#e6d9b3 100%);
+            color: #7c5c2b;
+            border-color: #bfa76f;
+        }
+        .btn-primary:hover {
+            background: #e6d9b3;
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 4px 24px rgba(120,180,255,0.25);
+        }
+        .form-control {
+            border: 2px solid #bfa76f;
+            border-radius: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,240,0.9);
+        }
+        .form-control:focus {
+            border-color: #7c5c2b;
+            box-shadow: 0 0 8px rgba(124,92,43,0.3);
+        }
+        a {
+            color: #7c5c2b;
+            text-decoration: none;
+            font-weight: 700;
+        }
+        a:hover {
+            color: #bfa76f;
+            text-decoration: underline;
         }
     </style>
 </head>

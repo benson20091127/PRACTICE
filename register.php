@@ -20,7 +20,7 @@ if($stmt->fetch()){
     echo json_encode(['status'=>0, 'message'=>'帳號已存在']);
     exit;
 }
-$stmt = $pdo->prepare('INSERT INTO members (username, password, nickname) VALUES (?, ?, ?)');
+$stmt = $pdo->prepare('INSERT INTO members (username, password, nickname, level, exp) VALUES (?, ?, ?, 1, 0)');
 try {
     if($stmt->execute([$username, $password, $nickname])){
         echo json_encode(['status'=>1, 'message'=>'註冊成功']);
