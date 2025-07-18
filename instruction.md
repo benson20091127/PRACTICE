@@ -2,231 +2,445 @@
 
 ## mode: edit
 
-# 🎯 目的
+# 🎯 專案目標
 
-建立一個前後端小專題：**文字修仙互動式網頁（小說型遊戲）**。
-
-## 🌐 前端網頁
-
-* 檔案名稱：`login.html`, `register.html`, `shop.html`, `inventory.html`, `story.html`
-* 全站統一古風精美樣式（SVG雲霧、漸層背景、花紋、字型、RWD），所有頁面皆採用一致設計。
-* 主要區塊、標題、按鈕、表格皆加大字體與間距，畫面寬敞舒適。
-* 商城頁面提供商品分類（武器、防具、祕笈、靈丹、全部），玩家可依分類瀏覽商品。
-* 故事頁面資訊（點數、壽命）與操作按鈕排版整齊，選項按鈕自動換行，並有右下角「修仙小提示」浮動區塊。
-* 導航列統一設計，包含商城、背包、冒險、登出等功能按鈕。
-
-## 📋 功能需求
-
-### `login.html`
-* 古風樣式登入表單，帳號/密碼欄位。
-* 使用 fetch API POST 登入，回傳 JSON，顯示成功/失敗提示。
-* 登入成功後自動跳轉至商城頁面。
-
-### `register.html`
-* 古風樣式註冊表單，帳號/密碼/暱稱欄位。
-* 表單驗證（密碼長度、帳號格式等）。
-* 註冊成功自動跳轉登入頁面。
-
-### `shop.html`
-* 顯示商城商品（裝備、武器、武功祕笈、靈丹妙藥等）。
-* 商品依分類顯示，分類按鈕可切換（武器、防具、祕笈、靈丹、全部）。
-* 顯示會員現有商城點數（即時同步）。
-* 購買按鈕，購買成功自動刷新點數並顯示購買成功訊息。
-* 商品卡片顯示名稱、類型、攻擊/防禦值、等級、價格等詳細資訊。
-
-### `inventory.html`
-* 顯示會員擁有的裝備與武功，攻擊/防禦/等級/獲得時間。
-* 裝備分類顯示，支援裝備數量統計。
-* 靈丹妙藥使用功能，可增加壽命值。
-* 特殊道具（結局券、不死藥等）使用功能。
-
-### `story.html`
-* 顯示修仙劇情文字內容，依會員選擇不同路徑發展故事。
-* 事件可獲得/失去商城點數、獲得裝備、死亡結局、飛昇結局。
-* 點數獲得/失去時，能即時更新點數顯示，並與商城頁同步。
-* **壽命機制**：每次事件觸發壽命減少，壽命歸零即死亡結局，壽命顯示於頁面。
-* **靈丹妙藥**：事件或商城可獲得靈丹妙藥，使用可增加壽命。
-* **特殊事件**：隨機事件有機會獲得特殊道具（如結局券、靈丹妙藥、不死藥等）。
-* **裝備影響死亡率**：玩家裝備越強，死亡機率越低（依攻擊、防禦、等級加成計算）。
-* 右下角浮動「修仙小提示」區塊，隨機顯示修仙語錄。
-* 多重結局系統：飛昇結局、死亡結局、特殊結局等。
-
-## 🎨 CSS框架
-
-* 使用 Bootstrap 5.3.1（CDN 載入）
-* 客製樣式檔：`style.css`，全站統一古風設計，RWD 支援，主要區塊加大字體與間距。
-* 古風配色方案：金色、深褐色、墨綠色漸層背景。
-* SVG雲霧動畫效果、花紋邊框裝飾。
+建立一個前後端分離的**文字修仙互動式網頁遊戲**，包含完整的會員系統、商城系統、背包系統和劇情冒險系統。
 
 ---
 
-# 🖥️ 後端網頁
+# 🌐 前端架構
 
-* 檔案名稱：`login.php`, `register.php`, `shop.php`, `inventory.php`, `story.php`, `add_points.php`, `use_item.php`
-* 資料庫配置：`config.php`
-* 會話管理：所有後端檔案皆包含 session 驗證
+## 📁 檔案結構
+```
+c:\xampp\htdocs\PRACTICE\
+├── frontend/
+│   ├── login.html          # 登入頁面
+│   ├── register.html       # 註冊頁面
+│   ├── shop.html           # 商城頁面
+│   ├── inventory.html      # 背包頁面
+│   └── story.html          # 故事冒險頁面
+├── css/
+│   └── style.css           # 全站統一古風樣式
+├── js/
+│   └── main.js             # 前端 JavaScript 邏輯
+└── backend/
+    ├── config.php          # 資料庫配置
+    ├── login.php           # 登入 API
+    ├── register.php        # 註冊 API
+    ├── shop.php            # 商城 API
+    ├── inventory.php       # 背包 API
+    ├── story.php           # 故事 API
+    ├── add_points.php      # 點數操作 API
+    └── use_item.php        # 道具使用 API
+```
 
-## 🔥 功能需求
+## 🎨 設計規範
 
-### `login.php`
-* 驗證帳號與密碼，回傳 JSON。
-* 登入成功建立 session，記錄 member_id。
-* 密碼安全驗證。
+### 視覺風格
+* **主題色彩**：金色 (#D4AF37)、深褐色 (#8B4513)、墨綠色 (#2F4F2F)
+* **背景效果**：漸層背景 + SVG 雲霧動畫
+* **裝飾元素**：古風花紋邊框、飄逸文字效果
+* **字體設計**：中文使用楷體或仿宋，英文使用 serif 字體
 
-### `register.php`
-* 新增會員資料，回傳 JSON。
-* 檢查帳號是否重複。
-* 初始化會員點數（1000點）和壽命（100點）。
+### 響應式設計 (RWD)
+* **Bootstrap 5.3.1** 框架 (CDN)
+* **斷點設計**：桌機 (≥1200px)、平板 (768-1199px)、手機 (<768px)
+* **字體大小**：標題 24px+、內文 16px+、按鈕 18px+
+* **間距設計**：區塊間距 30px+、按鈕間距 15px+
 
-### `shop.php`
-* 提供商品列表、購買功能，檢查點數、扣除點數、加入背包。
-* 商城商品包含裝備、武功、祕笈、靈丹妙藥、特殊道具。
-* 支援商品分類篩選。
-
-### `inventory.php`
-* 顯示會員現有裝備與武功。
-* 計算裝備總攻擊力、防禦力用於死亡率計算。
-
-### `story.php`
-* 處理故事事件邏輯，隨機生成事件。
-* 壽命扣除、點數變動、裝備獲得等功能。
-* 死亡率計算（基於裝備強度）。
-* 特殊事件觸發機制。
-
-### `add_points.php`
-* 供故事事件呼叫，安全增減會員商城點數，回傳最新點數，確保前後端點數同步。
-
-### `use_item.php`
-* 處理道具使用邏輯（靈丹妙藥增加壽命、結局券等）。
-* 道具使用後從背包移除。
+### 導航系統
+* **統一導航列**：商城、背包、冒險、登出按鈕
+* **麵包屑**：顯示當前頁面位置
+* **快速跳轉**：點數、壽命即時顯示
 
 ---
 
-# 📊 資料表設計 (ERD)
+# 📋 前端頁面詳細規格
 
-## 1️⃣ members (會員資料)
+## 🔐 login.html
+### 功能需求
+* 古風登入表單設計
+* 帳號/密碼驗證欄位
+* 記住密碼功能
+* 登入狀態檢查
 
-| 欄位名稱        | 資料型別         | PK | FK | 說明      |
-| ----------- | ------------ | -- | -- | ------- |
-| member\_id  | INT          | PK |    | 會員編號    |
-| username    | VARCHAR(50)  |    |    | 登入帳號    |
-| password    | VARCHAR(255) |    |    | 密碼（明碼）  |
-| nickname    | VARCHAR(50)  |    |    | 遊戲暱稱    |
-| points      | INT          |    |    | 商城點數    |
-| lifespan    | INT          |    |    | 壽命值     |
-| created\_at | DATETIME     |    |    | 註冊時間    |
+### 技術實作
+* `fetch()` POST 請求至 `login.php`
+* JSON 格式回傳處理
+* 成功後跳轉至 `shop.html`
+* 錯誤訊息友善顯示
 
-## 2️⃣ products (商城商品)
+## 📝 register.html
+### 功能需求
+* 註冊表單：帳號、密碼、確認密碼、暱稱
+* 即時表單驗證
+* 帳號重複檢查
+* 密碼強度檢測
 
-| 欄位名稱        | 資料型別                        | PK | FK | 說明      |
-| ----------- | --------------------------- | -- | -- | ------- |
-| product\_id | INT                         | PK |    | 商品編號    |
-| name        | VARCHAR(100)                |    |    | 商品名稱    |
-| type        | ENUM('武器','防具','祕笈','靈丹') |    |    | 商品類型    |
-| attack      | INT                         |    |    | 攻擊值     |
-| defense     | INT                         |    |    | 防禦值     |
-| level       | INT                         |    |    | 裝備等級    |
-| price       | INT                         |    |    | 價格（點數）  |
-| effect      | VARCHAR(255)                |    |    | 特殊效果說明  |
+### 驗證規則
+* 帳號：4-20字元，英數字組合
+* 密碼：6-30字元，包含英文+數字
+* 暱稱：2-10字元，中英文皆可
 
-## 3️⃣ inventory (會員背包)
+## 🏪 shop.html
+### 功能需求
+* 商品分類篩選：武器、防具、祕笈、靈丹、全部
+* 商品卡片展示：圖片、名稱、屬性、價格
+* 即時點數顯示與同步
+* 購買確認對話框
+* 購買成功動畫效果
 
-| 欄位名稱          | 資料型別     | PK | FK | 說明     |
-| ------------- | -------- | -- | -- | ------ |
-| inventory\_id | INT      | PK |    | 背包紀錄編號 |
-| member\_id    | INT      |    | FK | 關聯會員編號 |
-| product\_id   | INT      |    | FK | 關聯商品編號 |
-| quantity      | INT      |    |    | 數量     |
-| acquired\_at  | DATETIME |    |    | 獲得時間   |
+### 商品資訊展示
+* 攻擊值、防禦值、等級
+* 特殊效果說明
+* 庫存狀態
+* 推薦標籤
 
-## 🔗 ER 圖說明
+## 🎒 inventory.html
+### 功能需求
+* 裝備分類展示
+* 裝備屬性統計
+* 道具使用功能
+* 數量管理系統
 
-* **members.member\_id** → **inventory.member\_id**（一對多）
-* **products.product\_id** → **inventory.product\_id**（一對多）
+### 統計資訊
+* 總攻擊力、總防禦力
+* 裝備等級分布
+* 道具數量統計
+* 獲得時間排序
 
-```mermaid
-erDiagram
-    members {
-        INT member_id PK "會員編號"
-        VARCHAR username "登入帳號"
-        VARCHAR password "密碼（明碼）"
-        VARCHAR nickname "遊戲暱稱"
-        INT points "商城點數"
-        INT lifespan "壽命值"
-        DATETIME created_at "註冊時間"
-    }
+## 📖 story.html
+### 遊戲介面
+* 劇情文字區域
+* 選項按鈕區域 (自動換行)
+* 角色狀態欄：點數、壽命、裝備
+* 右下角「修仙小提示」浮動區塊
 
-    products {
-        INT product_id PK "商品編號"
-        VARCHAR name "商品名稱"
-        ENUM type "商品類型: 武器|防具|祕笈|靈丹"
-        INT attack "攻擊值"
-        INT defense "防禦值"
-        INT level "裝備等級"
-        INT price "價格（點數）"
-        VARCHAR effect "特殊效果說明"
-    }
+### 互動功能
+* 劇情選擇系統
+* 隨機事件觸發
+* 結局判定系統
+* 存檔/讀檔功能
 
-    inventory {
-        INT inventory_id PK "背包紀錄編號"
-        INT member_id FK "關聯會員編號"
-        INT product_id FK "關聯商品編號"
-        INT quantity "數量"
-        DATETIME acquired_at "取得時間"
-    }
+---
 
-    members ||--o{ inventory : 擁有
-    products ||--o{ inventory : 包含
+# 🖥️ 後端架構
+
+## 🔧 技術規格
+* **語言**：PHP 7.4+
+* **資料庫**：MySQL 8.0+
+* **會話管理**：PHP Sessions
+* **API格式**：RESTful JSON API
+
+## 🛡️ 安全機制
+* **SQL注入防護**：Prepared Statements
+* **XSS防護**：htmlspecialchars() 過濾
+* **CSRF防護**：Token驗證
+* **Session安全**：httponly、secure flags
+
+## 📡 API 端點規格
+
+### config.php
+```php
+// 資料庫連線配置
+// 錯誤處理設定
+// 安全性設定
+```
+
+### login.php
+**輸入**：username, password
+**輸出**：JSON {success: bool, message: string, member_id: int}
+**功能**：驗證登入、建立Session
+
+### register.php
+**輸入**：username, password, nickname
+**輸出**：JSON {success: bool, message: string}
+**功能**：新增會員、初始化數據
+
+### shop.php
+**GET**：取得商品列表（支援分類篩選）
+**POST**：購買商品（member_id, product_id, quantity）
+**輸出**：JSON {success: bool, message: string, data: array}
+
+### inventory.php
+**GET**：取得會員背包清單
+**輸出**：JSON {success: bool, data: array, stats: object}
+
+### story.php
+**GET**：取得當前劇情狀態
+**POST**：處理劇情選擇
+**功能**：隨機事件、結局判定、壽命扣除
+
+### add_points.php
+**POST**：安全增減點數（amount, type）
+**輸出**：JSON {success: bool, new_points: int}
+
+### use_item.php
+**POST**：使用道具（member_id, product_id）
+**輸出**：JSON {success: bool, effect: string}
+
+---
+
+# 📊 資料庫設計
+
+## 1️⃣ members (會員資料表)
+| 欄位 | 型別 | 約束 | 說明 |
+|------|------|------|------|
+| member_id | INT | PK, AUTO_INCREMENT | 會員編號 |
+| username | VARCHAR(50) | UNIQUE, NOT NULL | 登入帳號 |
+| password | VARCHAR(255) | NOT NULL | 密碼 (bcrypt) |
+| nickname | VARCHAR(50) | NOT NULL | 遊戲暱稱 |
+| points | INT | DEFAULT 1000 | 商城點數 |
+| lifespan | INT | DEFAULT 100 | 壽命值 |
+| level | INT | DEFAULT 1 | 修仙等級 |
+| experience | INT | DEFAULT 0 | 經驗值 |
+| last_login | DATETIME | NULL | 最後登入時間 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 註冊時間 |
+| updated_at | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
+
+## 2️⃣ products (商品資料表)
+| 欄位 | 型別 | 約束 | 說明 |
+|------|------|------|------|
+| product_id | INT | PK, AUTO_INCREMENT | 商品編號 |
+| name | VARCHAR(100) | NOT NULL | 商品名稱 |
+| type | ENUM('武器','防具','祕笈','靈丹','特殊') | NOT NULL | 商品類型 |
+| attack | INT | DEFAULT 0 | 攻擊值 |
+| defense | INT | DEFAULT 0 | 防禦值 |
+| level | INT | DEFAULT 1 | 裝備等級 |
+| price | INT | NOT NULL | 價格 |
+| effect | TEXT | NULL | 特殊效果 |
+| rarity | ENUM('普通','稀有','傳說','神話') | DEFAULT '普通' | 稀有度 |
+| image | VARCHAR(255) | NULL | 商品圖片 |
+| description | TEXT | NULL | 商品描述 |
+| stock | INT | DEFAULT -1 | 庫存數量 (-1=無限) |
+| is_active | BOOLEAN | DEFAULT TRUE | 是否上架 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
+
+## 3️⃣ inventory (背包資料表)
+| 欄位 | 型別 | 約束 | 說明 |
+|------|------|------|------|
+| inventory_id | INT | PK, AUTO_INCREMENT | 背包記錄編號 |
+| member_id | INT | FK, NOT NULL | 會員編號 |
+| product_id | INT | FK, NOT NULL | 商品編號 |
+| quantity | INT | DEFAULT 1 | 數量 |
+| is_equipped | BOOLEAN | DEFAULT FALSE | 是否裝備中 |
+| acquired_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 獲得時間 |
+
+## 4️⃣ story_progress (劇情進度表)
+| 欄位 | 型別 | 約束 | 說明 |
+|------|------|------|------|
+| progress_id | INT | PK, AUTO_INCREMENT | 進度編號 |
+| member_id | INT | FK, NOT NULL | 會員編號 |
+| current_chapter | INT | DEFAULT 1 | 當前章節 |
+| current_scene | INT | DEFAULT 1 | 當前場景 |
+| death_count | INT | DEFAULT 0 | 死亡次數 |
+| ending_type | VARCHAR(50) | NULL | 結局類型 |
+| save_data | JSON | NULL | 存檔數據 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 建立時間 |
+| updated_at | DATETIME | ON UPDATE CURRENT_TIMESTAMP | 更新時間 |
+
+## 🔗 外鍵約束
+```sql
+ALTER TABLE inventory ADD CONSTRAINT fk_inventory_member 
+  FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE;
+  
+ALTER TABLE inventory ADD CONSTRAINT fk_inventory_product 
+  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE;
+  
+ALTER TABLE story_progress ADD CONSTRAINT fk_story_member 
+  FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE;
 ```
 
 ---
 
-# ✅ 額外規範與實作細節
+# 🎮 遊戲機制設計
 
-## 🔐 安全性規範
-* 採用 MySQL 作為資料庫
-* Session 驗證機制，未登入自動跳轉登入頁
-* SQL 防注入處理（prepared statements）
-* 密碼安全性驗證
+## ⚔️ 戰鬥系統
+### 屬性計算
+* **總攻擊力** = 基礎攻擊 + 裝備攻擊力加成
+* **總防禦力** = 基礎防禦 + 裝備防禦力加成
+* **存活率** = 50% + (總攻擊力 + 總防禦力) * 0.5%
 
-## 🎮 遊戲機制
-* **壽命系統**：初始100點，每次事件-10~30點
-* **點數系統**：初始1000點，可購買裝備或透過事件獲得
-* **裝備系統**：影響死亡率，裝備越強存活率越高
-* **道具系統**：靈丹妙藥（+50壽命）、結局券、不死藥等
+### 死亡機制
+* 每次事件消耗壽命：10-30點（隨機）
+* 壽命≤0時觸發死亡判定
+* 裝備越強，死亡率越低
+* 特殊道具可復活或免死
 
-## 📱 前端技術
-* 前端支援 RWD，適配手機、平板、桌機
-* JSON 統一格式回傳
-* fetch API 處理 AJAX 請求
-* Bootstrap 5.3.1 + 自訂 CSS
+## 🏆 等級系統
+### 修仙境界
+1. **練氣期** (Lv.1-10)：初入修仙
+2. **築基期** (Lv.11-20)：修為小成
+3. **金丹期** (Lv.21-30)：修為大成
+4. **元嬰期** (Lv.31-40)：修為精深
+5. **化神期** (Lv.41-50)：修為通天
+6. **飛昇期** (Lv.51+)：羽化登仙
 
-## 🎯 內建商品範例
-* **武器類**：「七星劍」攻擊+30、防禦+5、等級1、價格500
-* **防具類**：「紫霞仙袍」攻擊+0、防禦+40、等級2、價格800
-* **祕笈類**：「九陽真經」攻擊+60、防禦+15、等級3、價格1500
-* **靈丹類**：「靈丹妙藥」使用後增加50點壽命、價格200
-* **特殊道具**：「結局券」、「不死藥」等稀有道具
+### 經驗值獲得
+* 完成劇情：+10-50 exp
+* 戰勝敵人：+20-100 exp
+* 使用祕笈：+5-20 exp
+* 特殊事件：+100-500 exp
 
-## 🎨 UI/UX 設計
-* 全站統一古風精美樣式
-* SVG雲霧動畫、漸層背景、花紋裝飾
-* 主要區塊加大字體與間距，提升可讀性
-* 響應式設計，支援各種螢幕尺寸
-* 浮動提示區塊美化，增加遊戲沉浸感
+## 🎲 隨機事件系統
+### 事件類型
+* **正面事件**：獲得點數、裝備、經驗
+* **負面事件**：失去點數、壽命、裝備
+* **中性事件**：劇情推進、選擇分支
+* **特殊事件**：稀有道具、隱藏劇情
 
-## 🔄 資料同步機制
-* 點數即時同步：商城購買、故事事件皆即時更新
-* 背包資料同步：購買商品、使用道具即時反映
-* 壽命值同步：事件觸發、道具使用即時更新
-* 前端支援 RWD
-* JSON 統一格式回傳
-* 登入後設置 Session 儲存 member\_id
-* 商品可內建範例：
+### 事件權重
+* 正面事件：40%
+* 負面事件：35%
+* 中性事件：20%
+* 特殊事件：5%
 
-  * 「七星劍」攻擊+20、防禦+5、等級1、價格500
-  * 「紫霞仙袍」攻擊+0、防禦+30、等級2、價格800
-  * 「九陽真經」攻擊+50、防禦+10、等級3、價格1500
-  * 「靈丹妙藥」使用後可增加50點壽命
-  * 「結局券」使用後可隨機獲得一個結局
-  * 「不死藥」使用後可復活一次，並回復全盛期
+## 🏁 結局系統
+### 結局類型
+* **飛昇結局**：達到飛昇期 + 特定條件
+* **死亡結局**：壽命耗盡 + 復活道具用完
+* **隱退結局**：達到特定點數 + 使用結局券
+* **魔道結局**：選擇特定劇情分支
+* **仙道結局**：正道路線 + 高等級
+* **隱藏結局**：特殊條件觸發
+
+---
+
+# 🛒 商城商品設定
+
+## ⚔️ 武器類
+| 名稱 | 攻擊 | 防禦 | 等級 | 價格 | 稀有度 |
+|------|------|------|------|------|--------|
+| 木劍 | 10 | 0 | 1 | 100 | 普通 |
+| 鐵劍 | 25 | 5 | 2 | 300 | 普通 |
+| 青鋼劍 | 45 | 10 | 3 | 600 | 稀有 |
+| 七星劍 | 70 | 15 | 4 | 1000 | 稀有 |
+| 屠龍刀 | 100 | 20 | 5 | 2000 | 傳說 |
+| 軒轅神劍 | 150 | 30 | 6 | 5000 | 神話 |
+
+## 🛡️ 防具類
+| 名稱 | 攻擊 | 防禦 | 等級 | 價格 | 稀有度 |
+|------|------|------|------|------|--------|
+| 布衣 | 0 | 15 | 1 | 100 | 普通 |
+| 皮甲 | 5 | 30 | 2 | 300 | 普通 |
+| 鎖子甲 | 10 | 50 | 3 | 600 | 稀有 |
+| 紫霞仙袍 | 15 | 80 | 4 | 1200 | 稀有 |
+| 龍鱗甲 | 25 | 120 | 5 | 2500 | 傳說 |
+| 混沌戰甲 | 40 | 200 | 6 | 6000 | 神話 |
+
+## 📜 祕笈類
+| 名稱 | 攻擊 | 防禦 | 等級 | 價格 | 特殊效果 |
+|------|------|------|------|------|----------|
+| 基礎心法 | 20 | 20 | 1 | 500 | 經驗值+20% |
+| 太極心法 | 40 | 40 | 2 | 1000 | 經驗值+40% |
+| 九陽真經 | 80 | 60 | 3 | 2500 | 經驗值+60% |
+| 易筋經 | 100 | 100 | 4 | 4000 | 經驗值+80% |
+| 神照經 | 150 | 120 | 5 | 8000 | 經驗值+100% |
+
+## 💊 靈丹類
+| 名稱 | 效果 | 價格 | 說明 |
+|------|------|------|------|
+| 回春丹 | 壽命+30 | 200 | 回復少量壽命 |
+| 大還丹 | 壽命+50 | 400 | 回復中量壽命 |
+| 九轉金丹 | 壽命+100 | 1000 | 回復大量壽命 |
+| 不老丹 | 壽命+200 | 3000 | 回復超量壽命 |
+| 不死藥 | 復活+滿壽命 | 10000 | 死亡時自動復活 |
+
+## 🎁 特殊道具
+| 名稱 | 效果 | 價格 | 說明 |
+|------|------|------|------|
+| 結局券 | 隨機結局 | 5000 | 可選擇特定結局 |
+| 經驗丹 | 經驗+500 | 800 | 大量經驗值 |
+| 幸運符 | 好運+1天 | 1500 | 提升正面事件機率 |
+| 時光石 | 回到過去 | 8000 | 重置劇情進度 |
+| 傳送符 | 跳躍章節 | 3000 | 快速推進劇情 |
+
+---
+
+# 📱 前端 JavaScript 規範
+
+## 🔧 核心功能
+```javascript
+// 全域變數
+let currentUser = null;
+let gameState = {};
+
+// API 呼叫封裝
+async function apiCall(endpoint, method = 'GET', data = null) {
+    // 統一的 API 呼叫處理
+}
+
+// 頁面初始化
+function initPage() {
+    // 檢查登入狀態
+    // 載入頁面資料
+    // 綁定事件監聽
+}
+
+// 即時數據更新
+function updateUserStats() {
+    // 更新點數、壽命、等級顯示
+}
+```
+
+## 🎨 UI 交互效果
+* 按鈕點擊動畫
+* 載入中效果
+* 成功/失敗提示
+* 平滑頁面轉場
+* 響應式選單
+
+---
+
+# ✅ 開發檢查清單
+
+## 🛠️ 開發階段
+- [ ] 資料庫結構建立
+- [ ] 後端 API 開發
+- [ ] 前端頁面製作
+- [ ] 樣式設計實作
+- [ ] 功能測試
+- [ ] 安全性檢查
+
+## 🧪 測試階段
+- [ ] 會員註冊/登入測試
+- [ ] 商城購買功能測試
+- [ ] 背包系統測試
+- [ ] 劇情系統測試
+- [ ] 響應式設計測試
+- [ ] 跨瀏覽器相容性測試
+
+## 🚀 部署階段
+- [ ] 生產環境配置
+- [ ] 資料庫部署
+- [ ] 安全性設定
+- [ ] 效能優化
+- [ ] 備份機制建立
+
+---
+
+# 📚 技術文件
+
+## 🔍 除錯指南
+* 開啟瀏覽器開發者工具
+* 檢查 Console 錯誤訊息
+* 確認 Network 請求狀態
+* 驗證 Session 資料
+
+## 📋 常見問題
+* **登入失敗**：檢查帳號密碼、資料庫連線
+* **點數不同步**：確認 Session 有效性
+* **商品購買失敗**：檢查點數餘額、庫存狀態
+* **劇情無法推進**：確認事件邏輯、資料庫更新
+
+## 🎯 效能優化
+* 使用 CDN 載入外部資源
+* 壓縮 CSS/JS 檔案
+* 優化資料庫查詢
+* 實作快取機制
+
+---
+
+**最後更新：2024年**  
+**版本：v2.0**  
+**開發者：修仙工作室**

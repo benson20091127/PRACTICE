@@ -20,6 +20,63 @@
         50%{background-color:rgba(255,215,0,0.2);} 
         100%{background-color:rgba(255,255,255,0);} 
     }
+    
+    /* 故事對話框樣式 */
+    .story-dialogue {
+        background: rgba(248, 244, 230, 0.95);
+        border: 2px solid #bfa76f;
+        border-radius: 20px;
+        padding: 20px;
+        margin: 15px 0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    
+    .character-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #7c5c2b;
+        margin-bottom: 8px;
+        border-bottom: 1px dashed #bfa76f;
+        padding-bottom: 5px;
+    }
+    
+    .dialogue-text {
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: #5a4a2a;
+        font-style: italic;
+    }
+    
+    .story-context {
+        background: rgba(255, 250, 230, 0.8);
+        border-left: 4px solid #bfa76f;
+        padding: 15px 20px;
+        margin: 15px 0;
+        border-radius: 0 15px 15px 0;
+        font-size: 1.1rem;
+        color: #6b5b3d;
+    }
+    
+    .choice-result {
+        background: rgba(230, 255, 230, 0.9);
+        border: 1px solid #90c695;
+        border-radius: 15px;
+        padding: 15px;
+        margin: 10px 0;
+        font-size: 1.05rem;
+        color: #2d5a2d;
+    }
+    
+    .choice-consequence {
+        background: rgba(255, 240, 240, 0.9);
+        border: 1px solid #e6a3a3;
+        border-radius: 15px;
+        padding: 15px;
+        margin: 10px 0;
+        font-size: 1.05rem;
+        color: #8b2635;
+    }
+    
     body {
         background: linear-gradient(135deg, #f8f4e6 0%, #e6d9b3 100%);
         background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
@@ -648,6 +705,633 @@ function handleDeath(reason) {
     });
 }
 
+// 新的故事事件系統 - 包含豐富的對話和劇情
+const storyEvents = {
+    // 神秘老人系列
+    mysteriousElder: {
+        title: "神秘老人",
+        stages: [
+            {
+                context: "你在幽深的山谷中行走，霧氣繚繞。忽然，一位鶴髮童顏的老人出現在你面前，他身穿道袍，手持拂塵。",
+                character: "神秘老人",
+                dialogue: "年輕的修仙者，我觀你骨骼清奇，頗有仙緣。不過修仙之路兇險萬分，你可願意接受我的考驗？",
+                choices: [
+                    {
+                        text: "恭敬請教，願受考驗",
+                        nextStage: 1,
+                        type: "respectful"
+                    },
+                    {
+                        text: "直接詢問有何好處",
+                        nextStage: 2,
+                        type: "pragmatic"
+                    },
+                    {
+                        text: "懷疑老人身份，保持警惕",
+                        nextStage: 3,
+                        type: "cautious"
+                    }
+                ]
+            },
+            {
+                // 恭敬路線
+                context: "老人滿意地點了點頭，眼中露出讚許之色。",
+                character: "神秘老人",
+                dialogue: "很好！謙遜乃修仙第一要義。我這裡有三樣東西，你可選其一：一是增長壽元的靈丹，二是提升修為的心法，三是護身的法寶。",
+                choices: [
+                    {
+                        text: "選擇靈丹",
+                        reward: {type: "life", amount: 20},
+                        exp: 80,
+                        result: "choice_result"
+                    },
+                    {
+                        text: "選擇心法",
+                        reward: {type: "exp", amount: 150},
+                        exp: 50,
+                        result: "choice_result"
+                    },
+                    {
+                        text: "選擇法寶",
+                        reward: {type: "item", name: "護身符"},
+                        exp: 60,
+                        result: "choice_result"
+                    }
+                ]
+            },
+            {
+                // 功利路線
+                context: "老人皺起眉頭，臉色略顯不悅。",
+                character: "神秘老人",
+                dialogue: "修仙者當淡泊名利，你如此功利心重，恐怕難成大器。不過念你年輕，我給你一次機會証明自己。",
+                choices: [
+                    {
+                        text: "誠心道歉，改正態度",
+                        nextStage: 4,
+                        type: "redemption"
+                    },
+                    {
+                        text: "堅持己見，據理力爭",
+                        nextStage: 5,
+                        type: "stubborn"
+                    }
+                ]
+            },
+            {
+                // 警惕路線
+                context: "老人哈哈大笑，眼中精光閃爍。",
+                character: "神秘老人",
+                dialogue: "不錯不錯！修仙路上處處陷阱，你能保持警惕實屬難得。既然如此，我就給你一個真正的考驗。",
+                choices: [
+                    {
+                        text: "接受考驗",
+                        nextStage: 6,
+                        type: "challenge"
+                    },
+                    {
+                        text: "禮貌拒絕離開",
+                        reward: {type: "points", amount: 100},
+                        exp: 40,
+                        result: "safe_exit"
+                    }
+                ]
+            },
+            {
+                // 救贖路線
+                context: "老人見你誠心悔改，表情緩和下來。",
+                character: "神秘老人",
+                dialogue: "孺子可教也！知錯能改，善莫大焉。我送你一顆洗髓丹，助你脫胎換骨。",
+                choices: [
+                    {
+                        text: "感激接受",
+                        reward: {type: "life", amount: 15},
+                        exp: 100,
+                        result: "choice_result"
+                    }
+                ]
+            },
+            {
+                // 固執路線
+                context: "老人搖頭嘆息，身影逐漸模糊。",
+                character: "神秘老人",
+                dialogue: "既然你如此固執己見，那就嚐嚐苦果吧！修仙路上，驕傲乃大敵！",
+                choices: [
+                    {
+                        text: "承受後果",
+                        consequence: {type: "points", amount: 200},
+                        exp: 30,
+                        result: "consequence"
+                    }
+                ]
+            },
+            {
+                // 挑戰路線
+                context: "老人掏出三個錦囊，每個都散發著不同的氣息。",
+                character: "神秘老人",
+                dialogue: "這三個錦囊，一個藏著機遇，一個藏著危險，一個空無一物。你的選擇將決定你的命運。",
+                choices: [
+                    {
+                        text: "選擇左邊錦囊",
+                        challenge: "luck_test",
+                        success: {type: "points", amount: 500},
+                        failure: {type: "life", amount: 10},
+                        exp: 80
+                    },
+                    {
+                        text: "選擇中間錦囊",
+                        challenge: "luck_test",
+                        success: {type: "item", name: "神鶴令"},
+                        failure: {type: "points", amount: 300},
+                        exp: 80
+                    },
+                    {
+                        text: "選擇右邊錦囊",
+                        challenge: "luck_test",
+                        success: {type: "life", amount: 25},
+                        failure: {type: "empty"},
+                        exp: 80
+                    }
+                ]
+            }
+        ]
+    },
+    
+    // 劍客對決系列
+    swordsman: {
+        title: "劍客對決",
+        stages: [
+            {
+                context: "竹林深處，一位身穿白衣的劍客盤膝而坐，身邊插著一把泛著寒光的長劍。聽到腳步聲，他緩緩睜開眼睛。",
+                character: "白衣劍客",
+                dialogue: "來者何人？此處是我的修練之地，你若無事，還請速速離去。若是想討教劍法，我倒不介意指點一二。",
+                choices: [
+                    {
+                        text: "請求指點劍法",
+                        nextStage: 1,
+                        type: "learn"
+                    },
+                    {
+                        text: "挑戰劍客",
+                        nextStage: 2,
+                        type: "challenge"
+                    },
+                    {
+                        text: "詢問此地秘密",
+                        nextStage: 3,
+                        type: "explore"
+                    },
+                    {
+                        text: "立即離開",
+                        reward: {type: "points", amount: 50},
+                        exp: 20,
+                        result: "safe_exit"
+                    }
+                ]
+            },
+            {
+                // 學習路線
+                context: "劍客站起身來，拔出長劍。劍光如水，在陽光下閃閃發亮。",
+                character: "白衣劍客",
+                dialogue: "很好！謙遜好學乃武者美德。我這就演示一套基礎劍法，你需仔細觀察，能領悟多少就看你的天賦了。",
+                choices: [
+                    {
+                        text: "全神貫注觀察",
+                        challenge: "comprehension_test",
+                        success: {type: "points", amount: 300, message: "你完全領悟了劍法精髓！"},
+                        failure: {type: "points", amount: 150, message: "你領悟了一些基本招式。"},
+                        exp: 100
+                    },
+                    {
+                        text: "邊看邊模仿",
+                        challenge: "skill_test",
+                        success: {type: "item", name: "玄鐵重劍", message: "劍客見你天賦異稟，贈你寶劍！"},
+                        failure: {type: "life", amount: 5, message: "你因動作錯誤而受傷。"},
+                        exp: 120
+                    }
+                ]
+            },
+            {
+                // 挑戰路線
+                context: "劍客眼中閃過一絲殺意，慢慢站起身來。",
+                character: "白衣劍客",
+                dialogue: "哦？年輕人膽子不小。不過我可要提醒你，我的劍可不長眼睛。既然你主動挑戰，那就別怪我手下無情了！",
+                choices: [
+                    {
+                        text: "全力應戰",
+                        challenge: "combat_test",
+                        success: {type: "points", amount: 800, message: "你戰勝了劍客，名聲大震！"},
+                        failure: {type: "death", reason: "被劍客一劍穿心而死"},
+                        exp: 200
+                    },
+                    {
+                        text: "以防為主",
+                        challenge: "defense_test",
+                        success: {type: "points", amount: 400, message: "你的防守讓劍客刮目相看！"},
+                        failure: {type: "life", amount: 15, message: "你受了重傷但保住性命。"},
+                        exp: 150
+                    },
+                    {
+                        text: "認輸投降",
+                        nextStage: 4,
+                        type: "surrender"
+                    }
+                ]
+            },
+            {
+                // 探索路線
+                context: "劍客神色變得神秘起來，望向竹林深處。",
+                character: "白衣劍客",
+                dialogue: "你很敏銳。這竹林深處確實藏著秘密...傳說有一座古墓，埋葬著上古劍仙。不過那裡也充滿危險。",
+                choices: [
+                    {
+                        text: "請求帶路",
+                        nextStage: 5,
+                        type: "guided"
+                    },
+                    {
+                        text: "獨自探索",
+                        nextStage: 6,
+                        type: "solo"
+                    },
+                    {
+                        text: "放棄探索",
+                        reward: {type: "points", amount: 100},
+                        exp: 50,
+                        result: "safe_exit"
+                    }
+                ]
+            },
+            {
+                // 投降路線
+                context: "劍客收起殺意，點了點頭。",
+                character: "白衣劍客",
+                dialogue: "知進退者為智者。你雖然實力不足，但頗有自知之明。我送你一本劍譜，好好修練吧。",
+                choices: [
+                    {
+                        text: "感謝接受",
+                        reward: {type: "points", amount: 200},
+                        exp: 80,
+                        result: "choice_result"
+                    }
+                ]
+            }
+        ]
+    },
+    
+    // 神秘洞穴系列
+    mysteriousCave: {
+        title: "神秘洞穴",
+        stages: [
+            {
+                context: "山崖邊，你發現了一個被藤蔓遮蓋的洞穴。洞口散發著淡淡的靈氣，但也有隱隱的危險氣息。",
+                character: "內心獨白",
+                dialogue: "這洞穴看起來很古老，說不定有什麼寶藏。但這種地方往往也很危險...",
+                choices: [
+                    {
+                        text: "小心進入洞穴",
+                        nextStage: 1,
+                        type: "cautious"
+                    },
+                    {
+                        text: "大膽直接進入",
+                        nextStage: 2,
+                        type: "bold"
+                    },
+                    {
+                        text: "先觀察一陣",
+                        nextStage: 3,
+                        type: "observe"
+                    },
+                    {
+                        text: "離開此處",
+                        reward: {type: "points", amount: 30},
+                        exp: 15,
+                        result: "safe_exit"
+                    }
+                ]
+            },
+            {
+                // 小心路線
+                context: "你小心翼翼地進入洞穴，每一步都格外謹慎。突然，你發現地面上有古老的符文。",
+                character: "內心獨白",
+                dialogue: "這些符文...看起來像是某種封印。我應該如何處理？",
+                choices: [
+                    {
+                        text: "仔細研究符文",
+                        challenge: "wisdom_test",
+                        success: {type: "item", name: "聚氣珠", message: "你破解了封印，獲得了寶物！"},
+                        failure: {type: "points", amount: 150, message: "你觸發了陷阱但安全脫身。"},
+                        exp: 120
+                    },
+                    {
+                        text: "繞過符文繼續",
+                        nextStage: 4,
+                        type: "bypass"
+                    }
+                ]
+            },
+            {
+                // 大膽路線
+                context: "你大步流星地進入洞穴，突然腳下一空！",
+                character: "內心獨白",
+                dialogue: "糟糕！這是陷阱！",
+                choices: [
+                    {
+                        text: "運功輕身",
+                        challenge: "agility_test",
+                        success: {type: "points", amount: 400, message: "你成功脫險，還發現了隱藏寶箱！"},
+                        failure: {type: "life", amount: 12, message: "你受了傷但保住性命。"},
+                        exp: 100
+                    },
+                    {
+                        text: "硬扛傷害",
+                        consequence: {type: "life", amount: 8},
+                        reward: {type: "points", amount: 200},
+                        exp: 80,
+                        result: "mixed"
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+// 挑戰測試系統
+function runChallenge(challengeType, playerChoice, successReward, failureReward, exp) {
+    let equip = window._equipBonus || {atk:0, def:0, lvl:0};
+    let baseSuccessRate = 0.5;
+    let playerBonus = 0;
+    
+    switch(challengeType) {
+        case 'luck_test':
+            baseSuccessRate = 0.4;
+            playerBonus = userLevel * 0.02;
+            break;
+        case 'comprehension_test':
+            baseSuccessRate = 0.6;
+            playerBonus = userLevel * 0.03 + equip.lvl * 0.02;
+            break;
+        case 'skill_test':
+            baseSuccessRate = 0.5;
+            playerBonus = equip.atk * 0.02 + userLevel * 0.02;
+            break;
+        case 'combat_test':
+            baseSuccessRate = 0.3;
+            playerBonus = equip.atk * 0.03 + equip.def * 0.02 + userLevel * 0.02;
+            break;
+        case 'defense_test':
+            baseSuccessRate = 0.7;
+            playerBonus = equip.def * 0.04 + userLevel * 0.02;
+            break;
+        case 'wisdom_test':
+            baseSuccessRate = 0.6;
+            playerBonus = equip.lvl * 0.03 + userLevel * 0.03;
+            break;
+        case 'agility_test':
+            baseSuccessRate = 0.5;
+            playerBonus = userLevel * 0.02 + equip.atk * 0.01;
+            break;
+    }
+    
+    let finalSuccessRate = Math.min(0.95, baseSuccessRate + playerBonus);
+    let success = Math.random() < finalSuccessRate;
+    
+    return {
+        success: success,
+        reward: success ? successReward : failureReward,
+        exp: exp
+    };
+}
+
+// 顯示故事事件
+function showStoryEvent(eventKey, stageIndex = 0) {
+    if(isDead || life <= 0) {
+        handleDeath();
+        return;
+    }
+    
+    const event = storyEvents[eventKey];
+    if(!event || !event.stages[stageIndex]) {
+        showStory(0); // 回到普通事件
+        return;
+    }
+    
+    const stage = event.stages[stageIndex];
+    loseLife(1);
+    updateLifeIndicator();
+    
+    let storyHTML = `<div class="story-title">${event.title}</div>`;
+    
+    if(stage.context) {
+        storyHTML += `<div class="story-context">${stage.context}</div>`;
+    }
+    
+    if(stage.dialogue && stage.character) {
+        storyHTML += `
+            <div class="story-dialogue">
+                <div class="character-name">${stage.character}</div>
+                <div class="dialogue-text">"${stage.dialogue}"</div>
+            </div>
+        `;
+    }
+    
+    document.getElementById('story').innerHTML = storyHTML;
+    document.getElementById('story').className = 'fade-in';
+    
+    const choicesDiv = document.getElementById('choices');
+    choicesDiv.innerHTML = '';
+    
+    stage.choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline-primary mb-2 story-choice-btn';
+        btn.innerText = choice.text;
+        btn.onclick = () => handleStoryChoice(eventKey, stageIndex, choice);
+        choicesDiv.appendChild(btn);
+    });
+}
+
+// 處理故事選擇
+function handleStoryChoice(eventKey, stageIndex, choice) {
+    if(isDead || life <= 0) {
+        handleDeath();
+        return;
+    }
+    
+    // 如果有下一階段，顯示下一階段
+    if(choice.nextStage !== undefined) {
+        showStoryEvent(eventKey, choice.nextStage);
+        return;
+    }
+    
+    // 如果有挑戰
+    if(choice.challenge) {
+        const challengeResult = runChallenge(
+            choice.challenge,
+            choice,
+            choice.success,
+            choice.failure,
+            choice.exp
+        );
+        
+        let resultHTML = '';
+        if(challengeResult.success) {
+            resultHTML = `<div class="choice-result">成功！${choice.success.message || ''}</div>`;
+        } else {
+            resultHTML = `<div class="choice-consequence">失敗！${choice.failure.message || ''}</div>`;
+        }
+        
+        document.getElementById('story').innerHTML += resultHTML;
+        
+        // 應用結果
+        applyEventResult(challengeResult.reward, challengeResult.exp);
+        return;
+    }
+    
+    // 直接獎勵
+    if(choice.reward) {
+        let resultHTML = `<div class="choice-result">你的選擇帶來了回報！</div>`;
+        document.getElementById('story').innerHTML += resultHTML;
+        applyEventResult(choice.reward, choice.exp);
+        return;
+    }
+    
+    // 負面後果
+    if(choice.consequence) {
+        let resultHTML = `<div class="choice-consequence">你的選擇帶來了後果...</div>`;
+        document.getElementById('story').innerHTML += resultHTML;
+        applyEventResult(choice.consequence, choice.exp, true);
+        return;
+    }
+    
+    // 混合結果
+    if(choice.result === 'mixed') {
+        document.getElementById('story').innerHTML += `<div class="choice-result">雖然受了傷，但也有所收穫。</div>`;
+        loseLife(choice.consequence.amount);
+        addPoints(choice.reward.amount, () => {
+            addExp(choice.exp, () => {
+                setTimeout(() => showStory(0), 2000);
+            });
+        });
+        return;
+    }
+    
+    // 安全離開
+    if(choice.result === 'safe_exit') {
+        document.getElementById('story').innerHTML += `<div class="choice-result">你安全地離開了。</div>`;
+        applyEventResult(choice.reward, choice.exp);
+        return;
+    }
+}
+
+// 應用事件結果
+function applyEventResult(reward, exp, isConsequence = false) {
+    if(reward.type === 'death') {
+        isDead = true;
+        handleDeath(reward.reason);
+        return;
+    }
+    
+    if(reward.type === 'life') {
+        if(isConsequence) {
+            loseLife(reward.amount);
+        } else {
+            addLife(reward.amount);
+        }
+        updateLifeIndicator();
+    }
+    
+    if(reward.type === 'points') {
+        if(isConsequence) {
+            losePoints(reward.amount, () => {
+                addExp(exp, () => {
+                    setTimeout(() => showStory(0), 2000);
+                });
+            });
+        } else {
+            addPoints(reward.amount, () => {
+                addExp(exp, () => {
+                    setTimeout(() => showStory(0), 2000);
+                });
+            });
+        }
+        return;
+    }
+    
+    if(reward.type === 'item') {
+        addItem(reward.name, () => {
+            addExp(exp, () => {
+                setTimeout(() => showStory(0), 2000);
+            });
+        });
+        return;
+    }
+    
+    if(reward.type === 'exp') {
+        addExp(reward.amount + exp, () => {
+            setTimeout(() => showStory(0), 2000);
+        });
+        return;
+    }
+    
+    if(reward.type === 'empty') {
+        document.getElementById('story').innerHTML += `<div class="choice-result">什麼都沒有發生。</div>`;
+        addExp(exp, () => {
+            setTimeout(() => showStory(0), 2000);
+        });
+        return;
+    }
+    
+    // 默認處理
+    addExp(exp, () => {
+        setTimeout(() => showStory(0), 2000);
+    });
+}
+
+// 修仙小提示
+const tipsArr = [
+    "修仙之路，貴在堅持與悟道。",
+    "裝備提升可降低死亡風險，記得多多強化！",
+    "在故事事件中，你的選擇會真正影響結果！",
+    "謙遜的態度往往能獲得更好的結果。",
+    "不同的選擇會解鎖不同的故事分支。",
+    "與NPC的對話很重要，仔細考慮你的回應。",
+    "有時候勇敢面對挑戰會有意想不到的收穫！",
+    "商城分類可快速尋找所需裝備。",
+    "壽命歸零即結束，請謹慎選擇每一步。",
+    "結局券可助你飛昇成仙，需要300級才能購買！",
+    "等級越高，能購買的裝備越強！",
+    "高級裝備價格昂貴，需要大量積累！",
+    "遭遇妖獸時，可以選擇戰鬥獲得豐厚獎勵，或逃避保全性命。",
+    "擊敗妖獸有機率獲得稀有裝備，但風險很大！",
+    "妖獸等級越高，獎勵越豐厚，但死亡機率也越大。",
+    "裝備越強，在挑戰中成功的機會越大！",
+    "每個故事事件都有多個分支，探索不同的選擇！"
+];
+
+function showRandomTip() {
+    const tip = tipsArr[Math.floor(Math.random()*tipsArr.length)];
+    document.getElementById('tipsBox').innerHTML =
+        `<div class="tips-box-title">修仙小提示</div><div>${tip}</div>`;
+}
+
+// 添加缺失的函數
+function logout(){
+    fetch('logout.php').then(()=>location.href='login.html');
+}
+
+function startGame(){
+    life = 30; // 每次進入重設壽命
+    fetchInventory(()=>{
+        fetchPoints(()=>{
+            isDead = false;
+            hasTicket = userItems.some(x=>x.name==='結局券');
+            updateLifeIndicator();
+            showStory(0);
+        });
+    });
+}
+
+// 修改原有的showStory函數，加入故事事件機率
 function showStory(step){
     if(isDead || life <= 0){
         handleDeath();
@@ -659,6 +1343,22 @@ function showStory(step){
         return;
     }
     
+    // 25%機率觸發故事事件
+    if(Math.random() < 0.25) {
+        const storyEventKeys = Object.keys(storyEvents);
+        const randomEventKey = storyEventKeys[Math.floor(Math.random() * storyEventKeys.length)];
+        showStoryEvent(randomEventKey, 0);
+        return;
+    }
+    
+    // 15%機率觸發妖獸事件
+    if(Math.random() < 0.15) {
+        const beast = getRandomBeast();
+        showBeastEncounter(beast);
+        return;
+    }
+    
+    // 否則顯示普通事件
     let pool = eventPool[step] || eventPool[0];
     let idx = getRandom(0, pool.length-1);
     let eventObj = pool[idx];
@@ -685,83 +1385,48 @@ function showStory(step){
             let eventResult = getRandomEvent(c.event);
             let baseExp = getRandom(5, 12);
             
-            // 处理妖兽遭遇事件
             if(eventResult.type === 'beast_encounter') {
-                const beast = eventResult.beast;
-                document.getElementById('story').innerHTML = `
-                    <div class="story-text">
-                        <div class="alert alert-warning">
-                            ⚔️ <strong>妖兽出现！</strong><br>
-                            你遭遇了 <span style="color: #dc3545; font-size: 1.2em;">${beast.name}</span> (等级 ${beast.level})<br>
-                            <small>此妖兽实力${beast.level > userLevel ? '强于' : beast.level < userLevel ? '弱于' : '相当于'}你的修为</small>
-                        </div>
-                    </div>
-                `;
-                
-                // 显示战斗选择
-                choicesDiv.innerHTML = '';
-                
-                const fightBtn = document.createElement('button');
-                fightBtn.className = 'btn btn-danger mb-2 story-choice-btn';
-                fightBtn.innerText = '迎战妖兽';
-                fightBtn.onclick = () => handleBeastBattle(beast, 'fight', c.next, baseExp);
-                
-                const escapeBtn = document.createElement('button');
-                escapeBtn.className = 'btn btn-warning mb-2 story-choice-btn';
-                escapeBtn.innerText = '逃避离开';
-                escapeBtn.onclick = () => handleBeastBattle(beast, 'escape', c.next, baseExp);
-                
-                choicesDiv.appendChild(fightBtn);
-                choicesDiv.appendChild(escapeBtn);
+                showBeastEncounter(eventResult.beast);
                 return;
             }
             
-            // ... 处理其他原有事件类型 (保持原有逻辑) ...
-            // 这里保持原有的事件处理逻辑不变
             handleNormalEvent(eventResult, baseExp, c.next);
         };
         choicesDiv.appendChild(btn);
     });
 }
 
-function logout(){
-    fetch('logout.php').then(()=>location.href='login.html');
+// 新增妖獸遭遇顯示函數
+function showBeastEncounter(beast) {
+    document.getElementById('story').innerHTML = `
+        <div class="story-context">
+            前方突然傳來陣陣嘶吼，一隻兇猛的妖獸攔住了你的去路！
+        </div>
+        <div class="story-dialogue">
+            <div class="character-name">遭遇妖獸</div>
+            <div class="dialogue-text">一隻 <span style="color: #dc3545; font-size: 1.2em;">${beast.name}</span> (等級 ${beast.level}) 出現在你面前！<br>
+            <small>此妖獸實力${beast.level > userLevel ? '遠超' : beast.level < userLevel ? '遠弱於' : '相當於'}你的修為</small></div>
+        </div>
+    `;
+    
+    const choicesDiv = document.getElementById('choices');
+    choicesDiv.innerHTML = '';
+    
+    const fightBtn = document.createElement('button');
+    fightBtn.className = 'btn btn-danger mb-2 story-choice-btn';
+    fightBtn.innerText = '迎戰妖獸';
+    fightBtn.onclick = () => handleBeastBattle(beast, 'fight', 0, getRandom(5, 12));
+    
+    const escapeBtn = document.createElement('button');
+    escapeBtn.className = 'btn btn-warning mb-2 story-choice-btn';
+    escapeBtn.innerText = '逃避離開';
+    escapeBtn.onclick = () => handleBeastBattle(beast, 'escape', 0, getRandom(5, 12));
+    
+    choicesDiv.appendChild(fightBtn);
+    choicesDiv.appendChild(escapeBtn);
 }
 
-function startGame(){
-    life = 30; // 每次進入重設壽命
-    fetchInventory(()=>{
-        fetchPoints(()=>{
-            isDead = false;
-            hasTicket = userItems.some(x=>x.name==='結局券');
-            updateLifeIndicator();
-            showStory(0);
-        });
-    });
-}
-
-// 修仙小提示
-const tipsArr = [
-    "修仙之路，貴在堅持與悟道。",
-    "裝備提升可降低死亡風險，記得多多強化！",
-    "靈丹妙藥可延長壽命，商城與冒險皆可獲得。",
-    "商城分類可快速尋找所需裝備。",
-    "壽命歸零即結束，請謹慎選擇每一步。",
-    "結局券可助你飛昇成仙，需要300級才能購買！",
-    "等級越高，能購買的裝備越強！",
-    "高級裝備價格昂貴，需要大量積累！",
-    "遭遇妖兽时，可以选择战斗获得丰厚奖励，或逃避保全性命。",
-    "击败妖兽有机率获得稀有装备，但风险很大！",
-    "妖兽等級越高，獎勵越豐厚，但死亡機率也越大。",
-    "裝備越強，戰勝妖獸的機會越大！"
-];
-
-function showRandomTip() {
-    const tip = tipsArr[Math.floor(Math.random()*tipsArr.length)];
-    document.getElementById('tipsBox').innerHTML =
-        `<div class="tips-box-title">修仙小提示</div><div>${tip}</div>`;
-}
-
+// 初始化遊戲
 showRandomTip();
 startGame();
 
